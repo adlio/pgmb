@@ -7,7 +7,16 @@ server provides.
 
 ## Usage Instructions
 
-All functions accept a `*sql.DB` as their first argument.
+All functions accept a `pgmb.DB` as their first argument. This is a wrapper around the standard
+library DB object. Use `NewDB(*sql.DB)` to create one:
+
+```
+db, err = sql.Open("postgres", "postgres://user:pass@localhost/db_name?sslmode=disable&search_path=musicbrainz,public")
+if err != nil {
+    log.Fatal(err)
+}
+mbDB := pgmb.NewDB(db)
+```
 
 ## Test Instructions
 
@@ -17,5 +26,5 @@ as an environment variable `PGMB_TEST_DSN`.
 Here's an example:
 
 ```
-PGMB_TEST_DSN=postgres://user:pass@localhost/database_name?sslmode=disable&search_path=musicbrainz,public
+PGMB_TEST_DSN=postgres://user:pass@localhost/db_name?sslmode=disable&search_path=musicbrainz,public
 ```
