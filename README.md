@@ -8,3 +8,14 @@ server provides.
 ## Usage Instructions
 
 All functions accept a `*sql.DB` as their first argument.
+
+## Test Instructions
+
+Tests require a completely populated MusicBrainz database connection information must be supplied
+as an environment variable `PGMB_TEST_DSN`.
+
+Here's an example:
+
+```
+PGMB_TEST_DSN=postgres://user:pass@localhost/database_name?sslmode=disable&search_path=musicbrainz,public
+```

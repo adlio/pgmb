@@ -9,7 +9,9 @@ import (
 )
 
 func WrapDB(db *sql.DB) *sqlx.DB {
-	return sqlx.NewDb(db, "postgres")
+	sqlxDB := sqlx.NewDb(db, "postgres")
+	sqlxDB.MapperFunc(ToSnakeCase)
+	return sqlxDB
 }
 
 // ToSnakeCase converts a string to snake case, words separated with underscores.
