@@ -10,7 +10,7 @@ server provides.
 All functions accept a `pgmb.DB` as their first argument. This is a wrapper around the standard
 library DB object. Use `NewDB(*sql.DB)` to create one:
 
-```
+```Go
 db, err = sql.Open("postgres", "postgres://user:pass@localhost/db_name?sslmode=disable&search_path=musicbrainz,public")
 if err != nil {
     log.Fatal(err)
@@ -25,6 +25,6 @@ as an environment variable `PGMB_TEST_DSN`.
 
 Here's an example:
 
-```
+```Go
 PGMB_TEST_DSN=postgres://user:pass@localhost/db_name?sslmode=disable&search_path=musicbrainz,public
 ```

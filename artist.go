@@ -7,19 +7,16 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+// ArtistAlias holds an alternative name for an Artist
 type ArtistAlias struct {
 	ID       int64
 	ArtistID int64 `db:"artist"`
 	Name     string
 	SortName string `db:"sort_name"`
-	Type     ArtistAliasType
 }
 
-type ArtistAliasType struct {
-	ID   int64
-	Name string
-}
-
+// Artist represents an entry in the artist table in
+// the MusicBrainz database.
 type Artist struct {
 	ID            int64
 	GID           uuid.UUID
@@ -29,10 +26,6 @@ type Artist struct {
 	BeginDateYear *int64 `db:"begin_date_year"`
 	EndDateYear   *int64 `db:"end_date_year"`
 	LastUpdated   time.Time
-}
-
-func (a *Artist) AddAlias(alias *ArtistAlias) {
-	a.Aliases = append(a.Aliases, alias)
 }
 
 // FindArtistsNamed retrieves a list of artists based on fuzzy-matching of
@@ -61,15 +54,15 @@ func FindArtistsNamed(db DB, name string) (artists []*Artist, err error) {
 		return
 	}
 
-	err = LoadArtistAliases(db, artists)
+	err = loadArtistAliases(db, artists)
 	return
 }
 
-// Given a slice of Artist, this function loads and attaches
-// all ArtistAliases from the database via a single SQL query.
-// This function is designed to operate on < 100 records of input.
+// loadArtistAliases lodas and attaches all ArtistAliases for the supplied
+// slice of Artist via a single SQL query. This function is designed to operate
+// on < 100 records of input.
 //
-func LoadArtistAliases(db DB, artists []*Artist) error {
+func loadArtistAliases(db DB, artists []*Artist) error {
 	var err error
 	var aliases []*ArtistAlias
 
@@ -102,7 +95,7 @@ func LoadArtistAliases(db DB, artists []*Artist) error {
 	// Attach Alias objects to the original Artists
 	for _, alias := range aliases {
 		if artist, ok := lu[alias.ArtistID]; ok {
-			artist.AddAlias(alias)
+			artist.Aliases = append(artist.Aliases, alias)
 		}
 	}
 
