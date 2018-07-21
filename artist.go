@@ -1,7 +1,6 @@
 package pgmb
 
 import (
-	"database/sql"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -27,8 +26,8 @@ type Artist struct {
 	Name          string
 	SortName      string `db:"sort_name"`
 	Aliases       []*ArtistAlias
-	BeginDateYear *int64
-	EndDateYear   *int64
+	BeginDateYear *int64 `db:"begin_date_year"`
+	EndDateYear   *int64 `db:"end_date_year"`
 	LastUpdated   time.Time
 }
 
@@ -39,10 +38,7 @@ func (a *Artist) AddAlias(alias *ArtistAlias) {
 // FindArtistsNamed retrieves a list of artists based on fuzzy-matching of
 // the artist.name and associated artist_alias.name as well.
 //
-func FindArtistsNamed(db *sql.DB, name string) (artists []*Artist, err error) {
-
-	xDB := WrapDB(db)
-
+func FindArtistsNamed(db DB, name string) (artists []*Artist, err error) {
 	artists = make([]*Artist, 0)
 
 	sql := `
@@ -60,7 +56,7 @@ func FindArtistsNamed(db *sql.DB, name string) (artists []*Artist, err error) {
 		)
 		ORDER BY similarity(lower(name), lower(?)) DESC`
 
-	err = xDB.Select(&artists, xDB.Rebind(sql), name, name, name)
+	err = db.Select(&artists, db.Rebind(sql), name, name, name)
 	if err != nil {
 		return
 	}
@@ -73,10 +69,7 @@ func FindArtistsNamed(db *sql.DB, name string) (artists []*Artist, err error) {
 // all ArtistAliases from the database via a single SQL query.
 // This function is designed to operate on < 100 records of input.
 //
-func LoadArtistAliases(db *sql.DB, artists []*Artist) error {
-
-	xDB := WrapDB(db)
-
+func LoadArtistAliases(db DB, artists []*Artist) error {
 	var err error
 	var aliases []*ArtistAlias
 
@@ -101,7 +94,7 @@ func LoadArtistAliases(db *sql.DB, artists []*Artist) error {
 	if err != nil {
 		return err
 	}
-	err = xDB.Select(&aliases, xDB.Rebind(sql), args...)
+	err = db.Select(&aliases, db.Rebind(sql), args...)
 	if err != nil {
 		return err
 	}

@@ -8,10 +8,15 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func WrapDB(db *sql.DB) *sqlx.DB {
-	sqlxDB := sqlx.NewDb(db, "postgres")
-	sqlxDB.MapperFunc(ToSnakeCase)
-	return sqlxDB
+type DB interface {
+	Get(interface{}, string, ...interface{}) error
+	Select(interface{}, string, ...interface{}) error
+	Rebind(string) string
+}
+
+func NewDB(db *sql.DB) DB {
+	convertedDB := sqlx.NewDb(db, "postgres")
+	return convertedDB
 }
 
 // ToSnakeCase converts a string to snake case, words separated with underscores.

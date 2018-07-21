@@ -7,7 +7,7 @@ import (
 )
 
 func TestGetArtistByID(t *testing.T) {
-	artists, err := FindArtistsNamed(DB, "Crosby Stills Nash")
+	artists, err := FindArtistsNamed(TESTDB, "Crosby Stills Nash")
 	if err != nil {
 		t.Error(err)
 	}
