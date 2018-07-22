@@ -3,6 +3,8 @@ package pgmb
 import (
 	"time"
 
+	"github.com/Masterminds/squirrel"
+
 	"github.com/jmoiron/sqlx"
 	uuid "github.com/satori/go.uuid"
 )
@@ -28,17 +30,11 @@ type Artist struct {
 	LastUpdated   time.Time
 }
 
-// FindArtistsNamed retrieves a list of artists based on fuzzy-matching of
-// the artist.name and associated artist_alias.name as well.
-//
-func FindArtistsNamed(db DB, name string) (artists []*Artist, err error) {
-	artists = make([]*Artist, 0)
+type ArtistNamed string
 
-	sql := `
-		SELECT
-		id, name, sort_name, begin_date_year, end_date_year
-		FROM artist
-		WHERE artist.id IN (
+func (an ArtistNamed) Query(b squirrel.SelectBuilder) squirrel.SelectBuilder {
+	return b.Where(`
+		artist.id IN (
 			SELECT id
 			FROM artist
 			WHERE lower(name) % lower(?)
@@ -47,9 +43,20 @@ func FindArtistsNamed(db DB, name string) (artists []*Artist, err error) {
 			FROM artist_alias
 			WHERE lower(name) % lower(?)
 		)
-		ORDER BY similarity(lower(name), lower(?)) DESC`
+	`, an, an)
+}
 
-	err = db.Select(&artists, db.Rebind(sql), name, name, name)
+// FindArtistsNamed retrieves a list of artists based on fuzzy-matching of
+// the artist.name and associated artist_alias.name as well.
+//
+func FindArtists(db DB, criteria ...Queryer) (artists []*Artist, err error) {
+	artists = make([]*Artist, 0)
+	q := Query().
+		Select("id, gid, name, sort_name, begin_date_year, end_date_year").
+		From("artist").
+		OrderBy("similarity(lower(name), lower($1)) DESC").
+		Limit(100)
+	err = Find(db, &artists, q, criteria...)
 	if err != nil {
 		return
 	}

@@ -5,6 +5,10 @@ import (
 	"database/sql"
 	"strings"
 
+	"github.com/Masterminds/squirrel"
+	"github.com/satori/go.uuid"
+
+	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -45,4 +49,30 @@ func ToSnakeCase(src string) string {
 		buf.WriteRune(v)
 	}
 	return strings.ToLower(buf.String())
+}
+
+type Queryer interface {
+	Query(squirrel.SelectBuilder) squirrel.SelectBuilder
+}
+
+type WithGID uuid.UUID
+
+func (gid WithGID) Query(b squirrel.SelectBuilder) squirrel.SelectBuilder {
+	return b.Where("gid = ?", gid)
+}
+
+func Query() sq.StatementBuilderType {
+	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+}
+
+func Find(db DB, dest interface{}, q sq.SelectBuilder, criteria ...Queryer) error {
+	for _, criteria := range criteria {
+		q = criteria.Query(q)
+	}
+	sql, args, err := q.ToSql()
+	if err != nil {
+		return err
+	}
+	err = db.Select(dest, db.Rebind(sql), args...)
+	return nil
 }
