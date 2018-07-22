@@ -8,8 +8,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func TestGetArtistsByName(t *testing.T) {
-	artists, err := FindArtists(TESTDB, ArtistNamed("Crosby Stills Nash"))
+func TestGetArtistsByFuzzyNameOrAlias(t *testing.T) {
+	artists, err := FindArtists(TESTDB, ArtistFuzzyNameOrAlias("Crosby Stills Nash"))
 	if err != nil {
 		t.Error(err)
 	}

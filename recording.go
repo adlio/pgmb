@@ -29,8 +29,7 @@ func FindRecordings(db DB, criteria ...Queryer) (recordings []*Recording, err er
 	recordings = make([]*Recording, 0)
 	q := Query().
 		Select("id, gid, name, length, comment").
-		From("recording").
-		Limit(1000)
+		From("recording")
 	err = Find(db, &recordings, q, criteria...)
 	return
 }

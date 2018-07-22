@@ -63,6 +63,18 @@ func (gid WithGID) Query(b squirrel.SelectBuilder) squirrel.SelectBuilder {
 	return b.Where("gid = ?", fmt.Sprintf("%s", uuid.UUID(gid).String()))
 }
 
+type Named string
+
+func (n Named) Query(b squirrel.SelectBuilder) squirrel.SelectBuilder {
+	return b.Where("name = ?", n)
+}
+
+type FuzzyNamed string
+
+func (n FuzzyNamed) Query(b squirrel.SelectBuilder) squirrel.SelectBuilder {
+	return b.Where("lower(name) % lower(?)", n)
+}
+
 func Query() sq.StatementBuilderType {
 	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 }
@@ -87,6 +99,21 @@ func Find(db DB, dest interface{}, q sq.SelectBuilder, criteria ...Queryer) erro
 	if err != nil {
 		return err
 	}
+	err = db.Select(dest, db.Rebind(sql), args...)
+	return nil
+}
+
+func FindDebug(db DB, dest interface{}, q sq.SelectBuilder, criteria ...Queryer) error {
+	for _, criteria := range criteria {
+		q = criteria.Query(q)
+	}
+	sql, args, err := q.ToSql()
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(db.Rebind(sql))
+	fmt.Println(args...)
 	err = db.Select(dest, db.Rebind(sql), args...)
 	return nil
 }

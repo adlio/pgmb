@@ -1,5 +1,10 @@
 package pgmb
 
+import (
+	"github.com/Masterminds/squirrel"
+	"github.com/jmoiron/sqlx"
+)
+
 // ArtistCredit represents an entry in the MusicBrainz
 // artist_credit table.
 type ArtistCredit struct {
@@ -13,6 +18,17 @@ type ArtistCredit struct {
 // a "Various Artists" record.
 func (ac *ArtistCredit) IsVariousArtists() bool {
 	return ac.ID == 1
+}
+
+type ArtistCreditIn []*ArtistCredit
+
+func (acs ArtistCreditIn) Query(b squirrel.SelectBuilder) squirrel.SelectBuilder {
+	ids := make([]interface{}, len(acs))
+	for i, ac := range acs {
+		ids[i] = ac.ID
+	}
+	sql, args, _ := sqlx.In("artist_credit IN (?)", ids)
+	return b.Where(sql, args...)
 }
 
 // FindArtistCredits retrieves a slice of ArtistCredit which

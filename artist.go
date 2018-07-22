@@ -30,9 +30,9 @@ type Artist struct {
 	LastUpdated   time.Time
 }
 
-type ArtistNamed string
+type ArtistFuzzyNameOrAlias string
 
-func (an ArtistNamed) Query(b squirrel.SelectBuilder) squirrel.SelectBuilder {
+func (an ArtistFuzzyNameOrAlias) Query(b squirrel.SelectBuilder) squirrel.SelectBuilder {
 	return b.Where(`
 		artist.id IN (
 			SELECT id
@@ -70,7 +70,6 @@ func FindArtists(db DB, criteria ...Queryer) (artists []*Artist, err error) {
 	q := Query().
 		Select("id, gid, name, sort_name, begin_date_year, end_date_year").
 		From("artist").
-		OrderBy("similarity(lower(name), lower($1)) DESC").
 		Limit(100)
 	err = Find(db, &artists, q, criteria...)
 	if err != nil {
