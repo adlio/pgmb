@@ -49,6 +49,6 @@ func ArtistCreditIn(acs []*ArtistCredit) QueryFunc {
 //
 func FindArtistCredits(db DB, clauses ...QueryFunc) (credits []*ArtistCredit, err error) {
 	credits = make([]*ArtistCredit, 0)
-	err = Find(db, &credits, ArtistCreditQuery(), clauses...)
+	err = Select(db, &credits, ArtistCreditQuery(), clauses...)
 	return
 }

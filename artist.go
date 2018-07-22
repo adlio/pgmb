@@ -71,7 +71,7 @@ func FindArtists(db DB, clauses ...QueryFunc) (artists []*Artist, err error) {
 		Select("id, gid, name, sort_name, begin_date_year, end_date_year").
 		From("artist").
 		Limit(100)
-	err = Find(db, &artists, q, clauses...)
+	err = Select(db, &artists, q, clauses...)
 	if err != nil {
 		return
 	}

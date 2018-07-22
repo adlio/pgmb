@@ -25,6 +25,8 @@ func NewDB(db *sql.DB) DB {
 	return convertedDB
 }
 
+// Get is inspired to sqlx.Get. It maps a query to a single struct destination.
+//
 func Get(db DB, dest interface{}, q sq.SelectBuilder, clauses ...QueryFunc) error {
 	for _, clause := range clauses {
 		q = clause(q)
@@ -37,7 +39,10 @@ func Get(db DB, dest interface{}, q sq.SelectBuilder, clauses ...QueryFunc) erro
 	return nil
 }
 
-func Find(db DB, dest interface{}, q sq.SelectBuilder, clauses ...QueryFunc) error {
+// Select is inspired by sqlx.Select. It maps a query with multiple results to a slice
+// of structs.
+//
+func Select(db DB, dest interface{}, q sq.SelectBuilder, clauses ...QueryFunc) error {
 	for _, clause := range clauses {
 		q = clause(q)
 	}

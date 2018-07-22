@@ -25,6 +25,6 @@ func RecordingQuery() sq.SelectBuilder {
 // FindRecordings returns recordings matching the supplied criteria
 func FindRecordings(db DB, clauses ...QueryFunc) (recordings []*Recording, err error) {
 	recordings = make([]*Recording, 0)
-	err = Find(db, &recordings, RecordingQuery(), clauses...)
+	err = Select(db, &recordings, RecordingQuery(), clauses...)
 	return
 }

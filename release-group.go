@@ -35,6 +35,6 @@ func ReleaseGroupQuery() sq.SelectBuilder {
 
 func FindReleaseGroups(db DB, clauses ...QueryFunc) (rgs []*ReleaseGroup, err error) {
 	rgs = make([]*ReleaseGroup, 0)
-	err = Find(db, &rgs, ReleaseGroupQuery(), clauses...)
+	err = Select(db, &rgs, ReleaseGroupQuery(), clauses...)
 	return
 }
