@@ -24,10 +24,9 @@ func (ac *ArtistCredit) IsVariousArtists() bool {
 // ArtistCreditQuery builds the default query for the artist_credit table
 //
 func ArtistCreditQuery() sq.SelectBuilder {
-	return Query().
+	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
 		Select("id, name, artist_count, ref_count").
-		From("artist_credit").
-		Limit(1000)
+		From("artist_credit")
 }
 
 // ArtistCreditIn builds a QueryFunc for filtering a resultset to a specific

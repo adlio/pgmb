@@ -3,7 +3,7 @@ package pgmb
 import (
 	"time"
 
-	"github.com/Masterminds/squirrel"
+	sq "github.com/Masterminds/squirrel"
 
 	"github.com/jmoiron/sqlx"
 	uuid "github.com/satori/go.uuid"
@@ -31,7 +31,7 @@ type Artist struct {
 }
 
 func ArtistFuzzyNameOrAlias(name string) QueryFunc {
-	return func(b squirrel.SelectBuilder) squirrel.SelectBuilder {
+	return func(b sq.SelectBuilder) sq.SelectBuilder {
 		return b.Where(`
 		artist.id IN (
 			SELECT id
@@ -46,15 +46,22 @@ func ArtistFuzzyNameOrAlias(name string) QueryFunc {
 	}
 }
 
+// ArtistQuery builds the default query for working with the artist table
+//
+func ArtistQuery() sq.SelectBuilder {
+	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Select("id, gid, name, sort_name, begin_date_year, end_date_year").
+		From("artist")
+}
+
+// GetArtist fetches a single artist matching the supplied criteria
+//
 func GetArtist(db DB, clauses ...QueryFunc) (*Artist, error) {
 	var err error
 	var artist *Artist
 	artist = &Artist{}
-	q := Query().
-		Select("id, gid, name, sort_name, begin_date_year, end_date_year").
-		From("artist").
-		Limit(1)
-	err = Get(db, artist, q, clauses...)
+
+	err = Get(db, artist, ArtistQuery().Limit(1), clauses...)
 	if err != nil {
 		return artist, err
 	}
@@ -62,16 +69,11 @@ func GetArtist(db DB, clauses ...QueryFunc) (*Artist, error) {
 	return artist, err
 }
 
-// FindArtistsNamed retrieves a list of artists based on fuzzy-matching of
-// the artist.name and associated artist_alias.name as well.
+// FindArtists retrieves a slice of Artist based on a dynamic query
 //
 func FindArtists(db DB, clauses ...QueryFunc) (artists []*Artist, err error) {
 	artists = make([]*Artist, 0)
-	q := Query().
-		Select("id, gid, name, sort_name, begin_date_year, end_date_year").
-		From("artist").
-		Limit(100)
-	err = Select(db, &artists, q, clauses...)
+	err = Select(db, &artists, ArtistQuery(), clauses...)
 	if err != nil {
 		return
 	}
