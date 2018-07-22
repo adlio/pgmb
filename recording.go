@@ -3,8 +3,7 @@ package pgmb
 import (
 	"time"
 
-	"github.com/Masterminds/squirrel"
-
+	sq "github.com/Masterminds/squirrel"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -17,19 +16,15 @@ type Recording struct {
 	LastUpdated time.Time
 }
 
-type RecordingName string
-
-func (rn RecordingName) Query(b squirrel.SelectBuilder) squirrel.SelectBuilder {
-	return b.Where("lower(recording.name) % lower(?)", rn).
-		OrderBy("similarity(lower(recording.name), lower($1))")
+func RecordingQuery() sq.SelectBuilder {
+	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Select("id, gid, name, length, comment").
+		From("recording")
 }
 
 // FindRecordings returns recordings matching the supplied criteria
 func FindRecordings(db DB, clauses ...QueryFunc) (recordings []*Recording, err error) {
 	recordings = make([]*Recording, 0)
-	q := Query().
-		Select("id, gid, name, length, comment").
-		From("recording")
-	err = Find(db, &recordings, q, clauses...)
+	err = Find(db, &recordings, RecordingQuery(), clauses...)
 	return
 }

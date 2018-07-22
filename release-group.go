@@ -1,6 +1,7 @@
 package pgmb
 
 import (
+	sq "github.com/Masterminds/squirrel"
 	"github.com/satori/go.uuid"
 )
 
@@ -26,12 +27,14 @@ type ReleaseGroupSecondaryType struct {
 	Name string
 }
 
+func ReleaseGroupQuery() sq.SelectBuilder {
+	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Select("id, gid, name").
+		From("release_group")
+}
+
 func FindReleaseGroups(db DB, clauses ...QueryFunc) (rgs []*ReleaseGroup, err error) {
 	rgs = make([]*ReleaseGroup, 0)
-	q := Query().
-		Select("id, gid, name").
-		From("release_group").
-		Limit(200)
-	err = Find(db, &rgs, q, clauses...)
+	err = Find(db, &rgs, ReleaseGroupQuery(), clauses...)
 	return
 }
