@@ -1,7 +1,7 @@
 package pgmb
 
 import (
-	"github.com/Masterminds/squirrel"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -16,12 +16,25 @@ type ArtistCredit struct {
 
 // IsVariousArtists indicates whether the ArtistCredit represents
 // a "Various Artists" record.
+//
 func (ac *ArtistCredit) IsVariousArtists() bool {
 	return ac.ID == 1
 }
 
+// ArtistCreditQuery builds the default query for the artist_credit table
+//
+func ArtistCreditQuery() sq.SelectBuilder {
+	return Query().
+		Select("id, name, artist_count, ref_count").
+		From("artist_credit").
+		Limit(1000)
+}
+
+// ArtistCreditIn builds a QueryFunc for filtering a resultset to a specific
+// list of supplied ArtistCredits.
+//
 func ArtistCreditIn(acs []*ArtistCredit) QueryFunc {
-	return func(b squirrel.SelectBuilder) squirrel.SelectBuilder {
+	return func(b sq.SelectBuilder) sq.SelectBuilder {
 		ids := make([]interface{}, len(acs))
 		for i, ac := range acs {
 			ids[i] = ac.ID
@@ -36,10 +49,6 @@ func ArtistCreditIn(acs []*ArtistCredit) QueryFunc {
 //
 func FindArtistCredits(db DB, clauses ...QueryFunc) (credits []*ArtistCredit, err error) {
 	credits = make([]*ArtistCredit, 0)
-	q := Query().
-		Select("id, name, artist_count, ref_count").
-		From("artist_credit").
-		Limit(1000)
-	err = Find(db, &credits, q, clauses...)
+	err = Find(db, &credits, ArtistCreditQuery(), clauses...)
 	return
 }
