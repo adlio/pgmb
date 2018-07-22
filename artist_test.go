@@ -3,6 +3,8 @@ package pgmb
 import (
 	"testing"
 
+	"github.com/satori/go.uuid"
+
 	_ "github.com/lib/pq"
 )
 
@@ -20,5 +22,22 @@ func TestGetArtistsByName(t *testing.T) {
 	}
 	if len(artist.Aliases) != 6 {
 		t.Errorf("Expected 6 aliases, got %d", len(artist.Aliases))
+	}
+}
+
+func TestGetArtistsByID(t *testing.T) {
+	uuid, err := uuid.FromString("79239441-bfd5-4981-a70c-55c3f15c1287")
+	if err != nil {
+		t.Error(err)
+	}
+	artist, err := GetArtist(TESTDB, WithGID(uuid))
+	if err != nil {
+		t.Error(err)
+	}
+	if artist.Name != "Madonna" {
+		t.Errorf("Expected 'Madonna', got '%s'.", artist.Name)
+	}
+	if *artist.BeginDateYear != 1958 {
+		t.Errorf("Expected begin_date_year = 1958, got %d", artist.BeginDateYear)
 	}
 }

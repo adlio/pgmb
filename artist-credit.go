@@ -14,3 +14,16 @@ type ArtistCredit struct {
 func (ac *ArtistCredit) IsVariousArtists() bool {
 	return ac.ID == 1
 }
+
+// FindArtistCredits retrieves a slice of ArtistCredit which
+// match the supplied criteria.
+//
+func FindArtistCredits(db DB, criteria ...Queryer) (credits []*ArtistCredit, err error) {
+	credits = make([]*ArtistCredit, 0)
+	q := Query().
+		Select("id, name, artist_count, ref_count").
+		From("artist_credit").
+		Limit(1000)
+	err = Find(db, &credits, q, criteria...)
+	return
+}

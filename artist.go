@@ -46,6 +46,22 @@ func (an ArtistNamed) Query(b squirrel.SelectBuilder) squirrel.SelectBuilder {
 	`, an, an)
 }
 
+func GetArtist(db DB, criteria ...Queryer) (*Artist, error) {
+	var err error
+	var artist *Artist
+	artist = &Artist{}
+	q := Query().
+		Select("id, gid, name, sort_name, begin_date_year, end_date_year").
+		From("artist").
+		Limit(1)
+	err = Get(db, artist, q, criteria...)
+	if err != nil {
+		return artist, err
+	}
+	err = loadArtistAliases(db, []*Artist{artist})
+	return artist, err
+}
+
 // FindArtistsNamed retrieves a list of artists based on fuzzy-matching of
 // the artist.name and associated artist_alias.name as well.
 //
@@ -61,7 +77,9 @@ func FindArtists(db DB, criteria ...Queryer) (artists []*Artist, err error) {
 		return
 	}
 
-	err = loadArtistAliases(db, artists)
+	if len(artists) > 0 {
+		err = loadArtistAliases(db, artists)
+	}
 	return
 }
 

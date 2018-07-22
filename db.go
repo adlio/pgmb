@@ -3,6 +3,7 @@ package pgmb
 import (
 	"bytes"
 	"database/sql"
+	"fmt"
 	"strings"
 
 	"github.com/Masterminds/squirrel"
@@ -26,6 +27,7 @@ type DB interface {
 // satisfies our DB interface directly.
 func NewDB(db *sql.DB) DB {
 	convertedDB := sqlx.NewDb(db, "postgres")
+	convertedDB.Exec("SELECT set_limit(0.5);")
 	return convertedDB
 }
 
@@ -58,11 +60,23 @@ type Queryer interface {
 type WithGID uuid.UUID
 
 func (gid WithGID) Query(b squirrel.SelectBuilder) squirrel.SelectBuilder {
-	return b.Where("gid = ?", gid)
+	return b.Where("gid = ?", fmt.Sprintf("%s", uuid.UUID(gid).String()))
 }
 
 func Query() sq.StatementBuilderType {
 	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+}
+
+func Get(db DB, dest interface{}, q sq.SelectBuilder, criteria ...Queryer) error {
+	for _, criteria := range criteria {
+		q = criteria.Query(q)
+	}
+	sql, args, err := q.ToSql()
+	if err != nil {
+		return err
+	}
+	err = db.Get(dest, db.Rebind(sql), args...)
+	return nil
 }
 
 func Find(db DB, dest interface{}, q sq.SelectBuilder, criteria ...Queryer) error {

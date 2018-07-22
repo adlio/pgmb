@@ -20,7 +20,8 @@ type Recording struct {
 type RecordingName string
 
 func (rn RecordingName) Query(b squirrel.SelectBuilder) squirrel.SelectBuilder {
-	return b.Where("lower(recording.name) % lower(?)", rn)
+	return b.Where("lower(recording.name) % lower(?)", rn).
+		OrderBy("similarity(lower(recording.name), lower($1))")
 }
 
 // FindRecordings returns recordings matching the supplied criteria

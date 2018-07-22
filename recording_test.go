@@ -3,7 +3,7 @@ package pgmb
 import "testing"
 
 func TestFindRecordingsByFuzzyName(t *testing.T) {
-	recordings, err := FindRecordings(TESTDB, RecordingName("I'm a Cool Girl"))
+	recordings, err := FindRecordings(TESTDB, RecordingName("Like a Virgin"))
 	if err != nil {
 		t.Error(err)
 	}
