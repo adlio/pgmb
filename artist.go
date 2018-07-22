@@ -30,10 +30,9 @@ type Artist struct {
 	LastUpdated   time.Time
 }
 
-type ArtistFuzzyNameOrAlias string
-
-func (an ArtistFuzzyNameOrAlias) Query(b squirrel.SelectBuilder) squirrel.SelectBuilder {
-	return b.Where(`
+func ArtistFuzzyNameOrAlias(name string) QueryFunc {
+	return func(b squirrel.SelectBuilder) squirrel.SelectBuilder {
+		return b.Where(`
 		artist.id IN (
 			SELECT id
 			FROM artist
@@ -43,10 +42,11 @@ func (an ArtistFuzzyNameOrAlias) Query(b squirrel.SelectBuilder) squirrel.Select
 			FROM artist_alias
 			WHERE lower(name) % lower(?)
 		)
-	`, an, an)
+	`, name, name)
+	}
 }
 
-func GetArtist(db DB, criteria ...Queryer) (*Artist, error) {
+func GetArtist(db DB, clauses ...QueryFunc) (*Artist, error) {
 	var err error
 	var artist *Artist
 	artist = &Artist{}
@@ -54,7 +54,7 @@ func GetArtist(db DB, criteria ...Queryer) (*Artist, error) {
 		Select("id, gid, name, sort_name, begin_date_year, end_date_year").
 		From("artist").
 		Limit(1)
-	err = Get(db, artist, q, criteria...)
+	err = Get(db, artist, q, clauses...)
 	if err != nil {
 		return artist, err
 	}
@@ -65,13 +65,13 @@ func GetArtist(db DB, criteria ...Queryer) (*Artist, error) {
 // FindArtistsNamed retrieves a list of artists based on fuzzy-matching of
 // the artist.name and associated artist_alias.name as well.
 //
-func FindArtists(db DB, criteria ...Queryer) (artists []*Artist, err error) {
+func FindArtists(db DB, clauses ...QueryFunc) (artists []*Artist, err error) {
 	artists = make([]*Artist, 0)
 	q := Query().
 		Select("id, gid, name, sort_name, begin_date_year, end_date_year").
 		From("artist").
 		Limit(100)
-	err = Find(db, &artists, q, criteria...)
+	err = Find(db, &artists, q, clauses...)
 	if err != nil {
 		return
 	}

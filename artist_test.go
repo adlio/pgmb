@@ -16,13 +16,6 @@ func TestGetArtistsByFuzzyNameOrAlias(t *testing.T) {
 	if len(artists) < 1 {
 		t.Fatalf("No results")
 	}
-	artist := artists[0]
-	if artist.Name != "Crosby, Stills & Nash" {
-		t.Errorf("Expected name 'Crosby, Stills & Nash' got '%s'", artist.Name)
-	}
-	if len(artist.Aliases) != 6 {
-		t.Errorf("Expected 6 aliases, got %d", len(artist.Aliases))
-	}
 }
 
 func TestGetArtistsByID(t *testing.T) {

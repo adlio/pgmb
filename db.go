@@ -1,13 +1,7 @@
 package pgmb
 
 import (
-	"bytes"
 	"database/sql"
-	"fmt"
-	"strings"
-
-	"github.com/Masterminds/squirrel"
-	"github.com/satori/go.uuid"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
@@ -31,57 +25,9 @@ func NewDB(db *sql.DB) DB {
 	return convertedDB
 }
 
-// ToSnakeCase converts a string to snake case, words separated with underscores.
-// It's intended to be used with NameMapper to map struct field names to snake case database fields.
-func ToSnakeCase(src string) string {
-	thisUpper := false
-	prevUpper := false
-
-	buf := bytes.NewBufferString("")
-	for i, v := range src {
-		if v >= 'A' && v <= 'Z' {
-			thisUpper = true
-		} else {
-			thisUpper = false
-		}
-		if i > 0 && thisUpper && !prevUpper {
-			buf.WriteRune('_')
-		}
-		prevUpper = thisUpper
-		buf.WriteRune(v)
-	}
-	return strings.ToLower(buf.String())
-}
-
-type Queryer interface {
-	Query(squirrel.SelectBuilder) squirrel.SelectBuilder
-}
-
-type WithGID uuid.UUID
-
-func (gid WithGID) Query(b squirrel.SelectBuilder) squirrel.SelectBuilder {
-	return b.Where("gid = ?", fmt.Sprintf("%s", uuid.UUID(gid).String()))
-}
-
-type Named string
-
-func (n Named) Query(b squirrel.SelectBuilder) squirrel.SelectBuilder {
-	return b.Where("name = ?", n)
-}
-
-type FuzzyNamed string
-
-func (n FuzzyNamed) Query(b squirrel.SelectBuilder) squirrel.SelectBuilder {
-	return b.Where("lower(name) % lower(?)", n)
-}
-
-func Query() sq.StatementBuilderType {
-	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-}
-
-func Get(db DB, dest interface{}, q sq.SelectBuilder, criteria ...Queryer) error {
-	for _, criteria := range criteria {
-		q = criteria.Query(q)
+func Get(db DB, dest interface{}, q sq.SelectBuilder, clauses ...QueryFunc) error {
+	for _, clause := range clauses {
+		q = clause(q)
 	}
 	sql, args, err := q.ToSql()
 	if err != nil {
@@ -91,29 +37,14 @@ func Get(db DB, dest interface{}, q sq.SelectBuilder, criteria ...Queryer) error
 	return nil
 }
 
-func Find(db DB, dest interface{}, q sq.SelectBuilder, criteria ...Queryer) error {
-	for _, criteria := range criteria {
-		q = criteria.Query(q)
+func Find(db DB, dest interface{}, q sq.SelectBuilder, clauses ...QueryFunc) error {
+	for _, clause := range clauses {
+		q = clause(q)
 	}
 	sql, args, err := q.ToSql()
 	if err != nil {
 		return err
 	}
-	err = db.Select(dest, db.Rebind(sql), args...)
-	return nil
-}
-
-func FindDebug(db DB, dest interface{}, q sq.SelectBuilder, criteria ...Queryer) error {
-	for _, criteria := range criteria {
-		q = criteria.Query(q)
-	}
-	sql, args, err := q.ToSql()
-	if err != nil {
-		return err
-	}
-
-	fmt.Println(db.Rebind(sql))
-	fmt.Println(args...)
 	err = db.Select(dest, db.Rebind(sql), args...)
 	return nil
 }

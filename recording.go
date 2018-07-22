@@ -25,11 +25,11 @@ func (rn RecordingName) Query(b squirrel.SelectBuilder) squirrel.SelectBuilder {
 }
 
 // FindRecordings returns recordings matching the supplied criteria
-func FindRecordings(db DB, criteria ...Queryer) (recordings []*Recording, err error) {
+func FindRecordings(db DB, clauses ...QueryFunc) (recordings []*Recording, err error) {
 	recordings = make([]*Recording, 0)
 	q := Query().
 		Select("id, gid, name, length, comment").
 		From("recording")
-	err = Find(db, &recordings, q, criteria...)
+	err = Find(db, &recordings, q, clauses...)
 	return
 }

@@ -26,12 +26,12 @@ type ReleaseGroupSecondaryType struct {
 	Name string
 }
 
-func FindReleaseGroups(db DB, criteria ...Queryer) (rgs []*ReleaseGroup, err error) {
+func FindReleaseGroups(db DB, clauses ...QueryFunc) (rgs []*ReleaseGroup, err error) {
 	rgs = make([]*ReleaseGroup, 0)
 	q := Query().
 		Select("id, gid, name").
 		From("release_group").
 		Limit(200)
-	err = Find(db, &rgs, q, criteria...)
+	err = Find(db, &rgs, q, clauses...)
 	return
 }

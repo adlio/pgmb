@@ -20,26 +20,26 @@ func (ac *ArtistCredit) IsVariousArtists() bool {
 	return ac.ID == 1
 }
 
-type ArtistCreditIn []*ArtistCredit
-
-func (acs ArtistCreditIn) Query(b squirrel.SelectBuilder) squirrel.SelectBuilder {
-	ids := make([]interface{}, len(acs))
-	for i, ac := range acs {
-		ids[i] = ac.ID
+func ArtistCreditIn(acs []*ArtistCredit) QueryFunc {
+	return func(b squirrel.SelectBuilder) squirrel.SelectBuilder {
+		ids := make([]interface{}, len(acs))
+		for i, ac := range acs {
+			ids[i] = ac.ID
+		}
+		sql, args, _ := sqlx.In("artist_credit IN (?)", ids)
+		return b.Where(sql, args...)
 	}
-	sql, args, _ := sqlx.In("artist_credit IN (?)", ids)
-	return b.Where(sql, args...)
 }
 
 // FindArtistCredits retrieves a slice of ArtistCredit which
 // match the supplied criteria.
 //
-func FindArtistCredits(db DB, criteria ...Queryer) (credits []*ArtistCredit, err error) {
+func FindArtistCredits(db DB, clauses ...QueryFunc) (credits []*ArtistCredit, err error) {
 	credits = make([]*ArtistCredit, 0)
 	q := Query().
 		Select("id, name, artist_count, ref_count").
 		From("artist_credit").
 		Limit(1000)
-	err = Find(db, &credits, q, criteria...)
+	err = Find(db, &credits, q, clauses...)
 	return
 }
