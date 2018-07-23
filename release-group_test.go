@@ -22,4 +22,10 @@ func TestGetReleaseGroup(t *testing.T) {
 	if releaseGroup.ArtistCredit.Name != "Sublime" {
 		t.Errorf("Expected 'Sublime', got '%s'", releaseGroup.ArtistCredit.Name)
 	}
+	if releaseGroup.Type == nil {
+		t.Fatal("ReleaseGroup.Type shouldn't be nil")
+	}
+	if releaseGroup.Type.ID != 1 || releaseGroup.Type.Name != "Album" {
+		t.Errorf("Expected '1-Album', got '%d-%s'.", releaseGroup.Type.ID, releaseGroup.Type.Name)
+	}
 }

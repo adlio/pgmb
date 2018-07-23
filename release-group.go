@@ -11,26 +11,12 @@ type ReleaseGroup struct {
 	ID             int64
 	GID            uuid.UUID
 	Name           string
-	ArtistCreditID int64         `db:"artist_credit"`
-	ArtistCredit   *ArtistCredit `db:"-"`
-	TypeID         *int64
-	Type           *ReleaseGroupPrimaryType     `db:"type"`
+	ArtistCreditID int64                        `db:"artist_credit"`
+	ArtistCredit   *ArtistCredit                `db:"-"`
+	TypeID         *int64                       `db:"type"`
+	Type           *ReleaseGroupPrimaryType     `db:"-"`
 	SecondaryTypes []*ReleaseGroupSecondaryType `db:"-"`
 	Comment        string
-}
-
-// ReleaseGroupPrimaryType represents an entry in the release_group_primary_type
-// table in the MusicBrainz database.
-type ReleaseGroupPrimaryType struct {
-	ID   int64
-	GID  uuid.UUID
-	Name string
-}
-
-type ReleaseGroupSecondaryType struct {
-	ID   int64
-	GID  uuid.UUID
-	Name string
 }
 
 // GetReleaseGroup returns the first ReleaseGroup result from the supplied dynamic query
@@ -59,6 +45,11 @@ func FindReleaseGroups(db DB, clauses ...QueryFunc) (groups []*ReleaseGroup, err
 	}
 
 	err = loadReleaseGroupArtistCredits(db, groups)
+	if err != nil {
+		return
+	}
+
+	err = loadReleaseGroupPrimaryTypes(db, groups)
 	return
 }
 
@@ -66,7 +57,7 @@ func FindReleaseGroups(db DB, clauses ...QueryFunc) (groups []*ReleaseGroup, err
 //
 func ReleaseGroupQuery() sq.SelectBuilder {
 	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
-		Select("id, gid, name, artist_credit, comment").
+		Select("id, gid, name, type, artist_credit, comment").
 		From("release_group")
 }
 
@@ -80,4 +71,17 @@ func loadReleaseGroupArtistCredits(db DB, groups []*ReleaseGroup) error {
 		group.ArtistCredit, _ = credits[group.ArtistCreditID]
 	}
 	return err
+}
+
+func loadReleaseGroupPrimaryTypes(db DB, groups []*ReleaseGroup) error {
+	types, err := ReleaseGroupPrimaryTypeMap(db)
+	if err != nil {
+		return err
+	}
+	for _, group := range groups {
+		if group.TypeID != nil {
+			group.Type, _ = types[*group.TypeID]
+		}
+	}
+	return nil
 }
