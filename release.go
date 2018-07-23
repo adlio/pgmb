@@ -6,14 +6,15 @@ import (
 )
 
 type Release struct {
-	ID             int64
-	GID            uuid.UUID
-	Name           string
-	ArtistCreditID int64 `db:"artist_credit"`
-	ReleaseGroupID int64 `db:"release_group"`
-	Barcode        *string
-	Comment        string
-	Quality        int64
+	ID               int64
+	GID              uuid.UUID
+	Name             string
+	ArtistCreditID   int64 `db:"artist_credit"`
+	ArtistCreditName string
+	ReleaseGroupID   int64 `db:"release_group"`
+	Barcode          *string
+	Comment          string
+	Quality          int64
 }
 
 func FindReleases(db DB, clauses ...QueryFunc) (rs []*Release, err error) {
@@ -24,7 +25,10 @@ func FindReleases(db DB, clauses ...QueryFunc) (rs []*Release, err error) {
 
 func ReleaseQuery() sq.SelectBuilder {
 	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
-		Select("id, gid, name, artist_credit, release_group, comment, barcode, quality").
+		Select(`
+			release.id, release.gid, release.name, release.artist_credit, release.release_group,
+			release.comment, release.barcode, release.quality
+		`).
 		From("release")
 }
 
