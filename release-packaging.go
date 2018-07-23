@@ -5,6 +5,8 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+// ReleasePackaging represents an entry in the release_packaging table
+// in the MusicBrainz database.
 type ReleasePackaging struct {
 	ID          int64
 	GID         uuid.UUID
@@ -13,12 +15,9 @@ type ReleasePackaging struct {
 	Description *string
 }
 
-func ReleasePackagingQuery() sq.SelectBuilder {
-	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
-		Select("id, gid, name, child_order, description").
-		From("release_packaging")
-}
-
+// ReleasePackagingMap returns a map of every release_packaging in the
+// database, keyed by its ID for easy linking to associations.
+//
 func ReleasePackagingMap(db DB) (packagings map[int64]*ReleasePackaging, err error) {
 	packagings = make(map[int64]*ReleasePackaging)
 	rs := make([]*ReleasePackaging, 0)
@@ -27,4 +26,12 @@ func ReleasePackagingMap(db DB) (packagings map[int64]*ReleasePackaging, err err
 		packagings[status.ID] = status
 	}
 	return
+}
+
+// ReleasePackagingQuery is the base query for working with release_packaging data
+//
+func ReleasePackagingQuery() sq.SelectBuilder {
+	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Select("id, gid, name, child_order, description").
+		From("release_packaging")
 }
