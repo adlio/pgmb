@@ -5,6 +5,8 @@ import (
 	"github.com/satori/go.uuid"
 )
 
+// Release represents an entry in the release table in the
+// MusicBrainz database.
 type Release struct {
 	ID             int64
 	GID            uuid.UUID
@@ -21,6 +23,8 @@ type Release struct {
 	Quality        int64
 }
 
+// FindReleases retrieves a slice of Release based on a dynamically built query
+//
 func FindReleases(db DB, clauses ...QueryFunc) (releases []*Release, err error) {
 	releases = make([]*Release, 0)
 	err = Select(db, &releases, ReleaseQuery(), clauses...)
@@ -42,6 +46,8 @@ func FindReleases(db DB, clauses ...QueryFunc) (releases []*Release, err error) 
 	return
 }
 
+// ReleaseQuery is the base query for working with release data.
+//
 func ReleaseQuery() sq.SelectBuilder {
 	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
 		Select(`
@@ -52,6 +58,9 @@ func ReleaseQuery() sq.SelectBuilder {
 		From("release")
 }
 
+// WhereReleaseIncludesRecording filters FindReleases to those which
+// include the supplied Recording ID on one of their media.
+//
 func WhereReleaseIncludesRecording(rid uuid.UUID) QueryFunc {
 	b := func(b sq.SelectBuilder) sq.SelectBuilder {
 		b = b.Where(`
