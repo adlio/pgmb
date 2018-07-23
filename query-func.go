@@ -2,12 +2,30 @@ package pgmb
 
 import (
 	"fmt"
+	"log"
 
 	sq "github.com/Masterminds/squirrel"
 	uuid "github.com/satori/go.uuid"
 )
 
 type QueryFunc func(sq.SelectBuilder) sq.SelectBuilder
+
+func EchoSQL() QueryFunc {
+	return func(b sq.SelectBuilder) sq.SelectBuilder {
+		sql, args, err := b.ToSql()
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println("------------------------------- EchoSQL() -------------------------------")
+		fmt.Println(sql)
+		for i, arg := range args {
+			fmt.Printf("--- arg %d ----\n", i)
+			fmt.Println(arg)
+		}
+		fmt.Println("------------------------------ End EchoSQL() -------------------------------")
+		return b
+	}
+}
 
 // WithGID builds a QueryFunc to exactly match the GID field on any table
 func WithGID(gid uuid.UUID) QueryFunc {

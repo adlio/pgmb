@@ -8,7 +8,7 @@ import (
 
 func TestWhereReleaseIncludesRecording(t *testing.T) {
 	rid, _ := uuid.FromString("bb883fd9-ab17-434f-b336-9469a2b4f363")
-	releases, err := FindReleases(TESTDB, WhereReleaseIncludesRecording(rid))
+	releases, err := FindReleases(TESTDB, WhereReleaseIncludesRecording(rid), EchoSQL())
 	if err != nil {
 		t.Fatal(err)
 	}

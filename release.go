@@ -40,8 +40,6 @@ func WhereReleaseIncludesRecording(rid uuid.UUID) QueryFunc {
 				AND medium.release = release.id
 			)
 		`, rid)
-		// sql, args, _ := b.ToSql()
-		// fmt.Println(sql, args)
 		return b
 	}
 	return b
