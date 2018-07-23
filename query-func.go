@@ -61,6 +61,7 @@ func FuzzyNamed(name string) QueryFunc {
 	}
 }
 
+// Limit builds a QueryFunc to limit the results to the supplied number
 func Limit(n uint64) QueryFunc {
 	return func(b sq.SelectBuilder) sq.SelectBuilder {
 		return b.Limit(n)
