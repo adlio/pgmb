@@ -11,15 +11,29 @@ type Release struct {
 	Name             string
 	ArtistCreditID   int64 `db:"artist_credit"`
 	ArtistCreditName string
-	ReleaseGroupID   int64 `db:"release_group"`
+	StatusID         *int64            `db:"status"`
+	Status           *ReleaseStatus    `db:"-"`
+	PackagingID      *int64            `db:"packaging"`
+	Packaging        *ReleasePackaging `db:"-"`
+	ReleaseGroupID   int64             `db:"release_group"`
 	Barcode          *string
 	Comment          string
 	Quality          int64
 }
 
-func FindReleases(db DB, clauses ...QueryFunc) (rs []*Release, err error) {
-	rs = make([]*Release, 0)
-	err = Select(db, &rs, ReleaseQuery(), clauses...)
+func FindReleases(db DB, clauses ...QueryFunc) (releases []*Release, err error) {
+	releases = make([]*Release, 0)
+	err = Select(db, &releases, ReleaseQuery(), clauses...)
+	if err != nil {
+		return
+	}
+
+	err = loadReleaseStatuses(db, releases)
+	if err != nil {
+		return
+	}
+
+	err = loadReleasePackagings(db, releases)
 	return
 }
 
@@ -27,6 +41,7 @@ func ReleaseQuery() sq.SelectBuilder {
 	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
 		Select(`
 			release.id, release.gid, release.name, release.artist_credit, release.release_group,
+			release.status, release.packaging,
 			release.comment, release.barcode, release.quality
 		`).
 		From("release")
@@ -47,4 +62,30 @@ func WhereReleaseIncludesRecording(rid uuid.UUID) QueryFunc {
 		return b
 	}
 	return b
+}
+
+func loadReleaseStatuses(db DB, releases []*Release) error {
+	statuses, err := ReleaseStatusMap(db)
+	if err != nil {
+		return err
+	}
+	for _, release := range releases {
+		if release.StatusID != nil {
+			release.Status, _ = statuses[*release.StatusID]
+		}
+	}
+	return nil
+}
+
+func loadReleasePackagings(db DB, releases []*Release) error {
+	packagings, err := ReleasePackagingMap(db)
+	if err != nil {
+		return err
+	}
+	for _, release := range releases {
+		if release.PackagingID != nil {
+			release.Packaging, _ = packagings[*release.PackagingID]
+		}
+	}
+	return nil
 }
