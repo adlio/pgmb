@@ -60,3 +60,9 @@ func FuzzyNamed(name string) QueryFunc {
 		return b.Where("lower(name) % lower(?)", name)
 	}
 }
+
+func Limit(n uint64) QueryFunc {
+	return func(b sq.SelectBuilder) sq.SelectBuilder {
+		return b.Limit(n)
+	}
+}

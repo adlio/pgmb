@@ -32,7 +32,7 @@ func FindReleases(db DB, clauses ...QueryFunc) (releases []*Release, err error) 
 		return
 	}
 
-	err = loadArtistCredits(db, releases)
+	err = loadReleaseArtistCredits(db, releases)
 	if err != nil {
 		return
 	}
@@ -78,7 +78,7 @@ func WhereReleaseIncludesRecording(rid uuid.UUID) QueryFunc {
 	return b
 }
 
-func loadArtistCredits(db DB, releases []*Release) error {
+func loadReleaseArtistCredits(db DB, releases []*Release) error {
 	ids := make([]int64, len(releases))
 	for i, rel := range releases {
 		ids[i] = rel.ArtistCreditID
