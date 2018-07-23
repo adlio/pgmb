@@ -32,5 +32,6 @@ func ReleaseGroupPrimaryTypeMap(db DB) (types map[int64]*ReleaseGroupPrimaryType
 func ReleaseGroupPrimaryTypeQuery() sq.SelectBuilder {
 	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
 		Select("id, gid, name, child_order").
-		From("release_group_primary_type")
+		From("release_group_primary_type").
+		OrderBy("child_order ASC")
 }
