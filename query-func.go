@@ -21,7 +21,7 @@ func EchoSQL() QueryFunc {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println("------------------------------- EchoSQL() -------------------------------")
+		fmt.Println("------------------------------- EchoSQL() ----------------------------------")
 		fmt.Println(sql)
 		for i, arg := range args {
 			fmt.Printf("--- arg %d ----\n", i)
