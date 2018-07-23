@@ -21,6 +21,24 @@ func (ac *ArtistCredit) IsVariousArtists() bool {
 	return ac.ID == 1
 }
 
+// FindArtistCredits retrieves a slice of ArtistCredit which
+// match the supplied criteria.
+//
+func FindArtistCredits(db DB, clauses ...QueryFunc) (credits []*ArtistCredit, err error) {
+	credits = make([]*ArtistCredit, 0)
+	err = Select(db, &credits, ArtistCreditQuery(), clauses...)
+	return
+}
+
+func ArtistCreditMap(db DB, ids []int64) (credits map[int64]*ArtistCredit, err error) {
+	credits = make(map[int64]*ArtistCredit)
+	results, err := FindArtistCredits(db, IDIn(ids))
+	for _, credit := range results {
+		credits[credit.ID] = credit
+	}
+	return
+}
+
 // ArtistCreditQuery builds the default query for the artist_credit table
 //
 func ArtistCreditQuery() sq.SelectBuilder {
@@ -41,13 +59,4 @@ func ArtistCreditIn(acs []*ArtistCredit) QueryFunc {
 		sql, args, _ := sqlx.In("artist_credit IN (?)", ids)
 		return b.Where(sql, args...)
 	}
-}
-
-// FindArtistCredits retrieves a slice of ArtistCredit which
-// match the supplied criteria.
-//
-func FindArtistCredits(db DB, clauses ...QueryFunc) (credits []*ArtistCredit, err error) {
-	credits = make([]*ArtistCredit, 0)
-	err = Select(db, &credits, ArtistCreditQuery(), clauses...)
-	return
 }

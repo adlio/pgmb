@@ -5,6 +5,7 @@ import (
 	"log"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/jmoiron/sqlx"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -31,6 +32,13 @@ func EchoSQL() QueryFunc {
 func WithGID(gid uuid.UUID) QueryFunc {
 	return func(b sq.SelectBuilder) sq.SelectBuilder {
 		return b.Where("gid = ?", fmt.Sprintf("%s", gid.String()))
+	}
+}
+
+func IDIn(ids []int64) QueryFunc {
+	return func(b sq.SelectBuilder) sq.SelectBuilder {
+		sql, args, _ := sqlx.In("id IN (?)", ids)
+		return b.Where(sql, args...)
 	}
 }
 

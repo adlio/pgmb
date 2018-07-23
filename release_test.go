@@ -19,10 +19,6 @@ func TestWhereReleaseIncludesRecording(t *testing.T) {
 	}
 
 	for _, release := range releases {
-		if release.Packaging != nil {
-			fmt.Printf("Release %s has packaging #%d %s\n", release.GID, release.Packaging.ID, release.Packaging.Name)
-		} else {
-			fmt.Printf("Release %s has no packaging.\n", release.GID)
-		}
+		fmt.Println("Release %s has Artist Credit %d %s\n", release.GID, release.ArtistCredit.ID, release.ArtistCredit.Name)
 	}
 }

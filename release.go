@@ -6,24 +6,29 @@ import (
 )
 
 type Release struct {
-	ID               int64
-	GID              uuid.UUID
-	Name             string
-	ArtistCreditID   int64 `db:"artist_credit"`
-	ArtistCreditName string
-	StatusID         *int64            `db:"status"`
-	Status           *ReleaseStatus    `db:"-"`
-	PackagingID      *int64            `db:"packaging"`
-	Packaging        *ReleasePackaging `db:"-"`
-	ReleaseGroupID   int64             `db:"release_group"`
-	Barcode          *string
-	Comment          string
-	Quality          int64
+	ID             int64
+	GID            uuid.UUID
+	Name           string
+	ArtistCreditID int64             `db:"artist_credit"`
+	ArtistCredit   *ArtistCredit     `db:"-"`
+	StatusID       *int64            `db:"status"`
+	Status         *ReleaseStatus    `db:"-"`
+	PackagingID    *int64            `db:"packaging"`
+	Packaging      *ReleasePackaging `db:"-"`
+	ReleaseGroupID int64             `db:"release_group"`
+	Barcode        *string
+	Comment        string
+	Quality        int64
 }
 
 func FindReleases(db DB, clauses ...QueryFunc) (releases []*Release, err error) {
 	releases = make([]*Release, 0)
 	err = Select(db, &releases, ReleaseQuery(), clauses...)
+	if err != nil {
+		return
+	}
+
+	err = loadArtistCredits(db, releases)
 	if err != nil {
 		return
 	}
@@ -62,6 +67,18 @@ func WhereReleaseIncludesRecording(rid uuid.UUID) QueryFunc {
 		return b
 	}
 	return b
+}
+
+func loadArtistCredits(db DB, releases []*Release) error {
+	ids := make([]int64, len(releases))
+	for i, rel := range releases {
+		ids[i] = rel.ArtistCreditID
+	}
+	credits, err := ArtistCreditMap(db, ids)
+	for _, release := range releases {
+		release.ArtistCredit, _ = credits[release.ArtistCreditID]
+	}
+	return err
 }
 
 func loadReleaseStatuses(db DB, releases []*Release) error {
