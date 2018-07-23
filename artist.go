@@ -30,6 +30,8 @@ type Artist struct {
 	LastUpdated   time.Time
 }
 
+// ArtistFuzzyNameOrAlias returns a QueryFunc which matches artists
+// whose name or alias names fuzzy-match the supplied string.
 func ArtistFuzzyNameOrAlias(name string) QueryFunc {
 	return func(b sq.SelectBuilder) sq.SelectBuilder {
 		return b.Where(`
@@ -47,7 +49,6 @@ func ArtistFuzzyNameOrAlias(name string) QueryFunc {
 }
 
 // ArtistQuery builds the default query for working with the artist table
-//
 func ArtistQuery() sq.SelectBuilder {
 	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
 		Select("id, gid, name, sort_name, begin_date_year, end_date_year").

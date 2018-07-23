@@ -7,6 +7,8 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+// Recording represents an entry in the recording table in
+// the MusicBrainz database.
 type Recording struct {
 	ID          int64
 	GID         uuid.UUID
@@ -16,6 +18,7 @@ type Recording struct {
 	LastUpdated time.Time
 }
 
+// RecordingQuery builds the default query for working with the recording table
 func RecordingQuery() sq.SelectBuilder {
 	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
 		Select("id, gid, name, length, comment").

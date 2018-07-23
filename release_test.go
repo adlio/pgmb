@@ -19,6 +19,6 @@ func TestWhereReleaseIncludesRecording(t *testing.T) {
 	}
 
 	for _, release := range releases {
-		fmt.Println("Release %s has Artist Credit %d %s\n", release.GID, release.ArtistCredit.ID, release.ArtistCredit.Name)
+		fmt.Printf("Release %s has Artist Credit %d %s\n", release.GID, release.ArtistCredit.ID, release.ArtistCredit.Name)
 	}
 }

@@ -9,8 +9,12 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+// QueryFunc allows chaining of squirrel statements
 type QueryFunc func(sq.SelectBuilder) sq.SelectBuilder
 
+// EchoSQL can be inserted in a find command to output the SQL and arguments accumulated to
+// that point.
+//
 func EchoSQL() QueryFunc {
 	return func(b sq.SelectBuilder) sq.SelectBuilder {
 		sql, args, err := b.ToSql()
@@ -35,6 +39,7 @@ func WithGID(gid uuid.UUID) QueryFunc {
 	}
 }
 
+// IDIn builds a QueryFunc for records matching the supplied IDs
 func IDIn(ids []int64) QueryFunc {
 	return func(b sq.SelectBuilder) sq.SelectBuilder {
 		sql, args, _ := sqlx.In("id IN (?)", ids)
