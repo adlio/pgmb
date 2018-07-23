@@ -21,6 +21,7 @@ type DB interface {
 // satisfies our DB interface directly.
 func NewDB(db *sql.DB) DB {
 	convertedDB := sqlx.NewDb(db, "postgres")
+	//TODO Is this a good idea?
 	convertedDB.Exec("SELECT set_limit(0.5);")
 	return convertedDB
 }
@@ -51,5 +52,5 @@ func Select(db DB, dest interface{}, q sq.SelectBuilder, clauses ...QueryFunc) e
 		return err
 	}
 	err = db.Select(dest, db.Rebind(sql), args...)
-	return nil
+	return err
 }
