@@ -1,6 +1,8 @@
 package pgmb
 
 import (
+	"github.com/lib/pq"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/satori/go.uuid"
 )
@@ -8,15 +10,16 @@ import (
 // ReleaseGroup represents an entry in the MusicBrainz database
 // release_group table.
 type ReleaseGroup struct {
-	ID             int64
-	GID            uuid.UUID
-	Name           string
-	ArtistCreditID int64                        `db:"artist_credit"`
-	ArtistCredit   *ArtistCredit                `db:"-"`
-	TypeID         *int64                       `db:"type"`
-	Type           *ReleaseGroupPrimaryType     `db:"-"`
-	SecondaryTypes []*ReleaseGroupSecondaryType `db:"-"`
-	Comment        string
+	ID               int64
+	GID              uuid.UUID
+	Name             string
+	ArtistCreditID   int64                        `db:"artist_credit"`
+	ArtistCredit     *ArtistCredit                `db:"-"`
+	TypeID           *int64                       `db:"type"`
+	Type             *ReleaseGroupPrimaryType     `db:"-"`
+	SecondaryTypeIDs pq.Int64Array                `db:"secondary_type_ids"`
+	SecondaryTypes   []*ReleaseGroupSecondaryType `db:"-"`
+	Comment          string
 }
 
 // GetReleaseGroup returns the first ReleaseGroup result from the supplied dynamic query
@@ -50,6 +53,11 @@ func FindReleaseGroups(db DB, clauses ...QueryFunc) (groups []*ReleaseGroup, err
 	}
 
 	err = loadReleaseGroupPrimaryTypes(db, groups)
+	if err != nil {
+		return
+	}
+
+	err = loadReleaseGroupSecondaryTypes(db, groups)
 	return
 }
 
@@ -57,7 +65,14 @@ func FindReleaseGroups(db DB, clauses ...QueryFunc) (groups []*ReleaseGroup, err
 //
 func ReleaseGroupQuery() sq.SelectBuilder {
 	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
-		Select("id, gid, name, type, artist_credit, comment").
+		Select(`
+			id, gid, name, type, artist_credit, comment,
+			ARRAY(
+				SELECT j.secondary_type
+				FROM release_group_secondary_type_join j
+				WHERE j.release_group = release_group.id
+			) as secondary_type_ids
+		`).
 		From("release_group")
 }
 
@@ -84,4 +99,18 @@ func loadReleaseGroupPrimaryTypes(db DB, groups []*ReleaseGroup) error {
 		}
 	}
 	return nil
+}
+
+func loadReleaseGroupSecondaryTypes(db DB, groups []*ReleaseGroup) error {
+	var err error
+	typeMap, err := ReleaseGroupSecondaryTypeMap(db)
+	for _, group := range groups {
+		if len(group.SecondaryTypeIDs) > 0 {
+			group.SecondaryTypes = make([]*ReleaseGroupSecondaryType, len(group.SecondaryTypeIDs))
+			for i, typeID := range group.SecondaryTypeIDs {
+				group.SecondaryTypes[i], _ = typeMap[typeID]
+			}
+		}
+	}
+	return err
 }
