@@ -28,3 +28,8 @@ Here's an example:
 ```Go
 PGMB_TEST_DSN=postgres://user:pass@localhost/db_name?sslmode=disable&search_path=musicbrainz,public
 ```
+
+## TODO
+
+1. Test features which would allow looking up the "canonical" (earliest Official, U.S.-released occurrence)
+of a recording based on an artist name and song title. This likely is a search feature on Track.
