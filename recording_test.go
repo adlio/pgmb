@@ -1,6 +1,9 @@
 package pgmb
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestFindRecordingsByFuzzyNameAndArtist(t *testing.T) {
 	t.Skipf("TODO: Speed this up. Too slow.")
@@ -30,5 +33,9 @@ func TestFindRecordingsByNameAndArtist(t *testing.T) {
 	}
 	if len(recordings) < 1 {
 		t.Fatalf("No results")
+	}
+
+	for _, recording := range recordings {
+		fmt.Printf("%s %s by %s\n", recording.GID, recording.Name, recording.ArtistCredit.Name)
 	}
 }

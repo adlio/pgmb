@@ -10,18 +10,25 @@ import (
 // Recording represents an entry in the recording table in
 // the MusicBrainz database.
 type Recording struct {
-	ID          int64
-	GID         uuid.UUID
-	Name        string
-	Length      *int64
-	Comment     string
-	LastUpdated time.Time
+	ID             int64
+	GID            uuid.UUID
+	Name           string
+	ArtistCreditID int64         `db:"artist_credit"`
+	ArtistCredit   *ArtistCredit `db:"-"`
+	Length         *int64
+	Comment        string
+	LastUpdated    time.Time
 }
 
 // FindRecordings returns recordings matching the supplied criteria
 func FindRecordings(db DB, clauses ...QueryFunc) (recordings []*Recording, err error) {
 	recordings = make([]*Recording, 0)
 	err = Select(db, &recordings, RecordingQuery(), clauses...)
+	if err != nil {
+		return
+	}
+
+	err = loadRecordingArtistCredits(db, recordings)
 	return
 }
 
@@ -38,6 +45,18 @@ func RecordingMap(db DB, ids []int64) (recordings map[int64]*Recording, err erro
 // RecordingQuery builds the default query for working with the recording table
 func RecordingQuery() sq.SelectBuilder {
 	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
-		Select("id, gid, name, length, comment").
+		Select("id, gid, name, artist_credit, length, comment").
 		From("recording")
+}
+
+func loadRecordingArtistCredits(db DB, recordings []*Recording) error {
+	ids := make([]int64, len(recordings))
+	for i, rec := range recordings {
+		ids[i] = rec.ArtistCreditID
+	}
+	credits, err := ArtistCreditMap(db, ids)
+	for _, recording := range recordings {
+		recording.ArtistCredit, _ = credits[recording.ArtistCreditID]
+	}
+	return err
 }
