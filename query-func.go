@@ -54,6 +54,17 @@ func Named(name string) QueryFunc {
 	}
 }
 
+// Where is a wrapper to a Squirrel Where()
+func Where(cmd string, args ...interface{}) QueryFunc {
+	return func(b sq.SelectBuilder) sq.SelectBuilder {
+		sql, args, err := sqlx.In(cmd, args...)
+		if err != nil {
+			panic(err)
+		}
+		return b.Where(sql, args...)
+	}
+}
+
 // FuzzyNamed builds a QueryFunc to fuzzy-match the name field on any table
 func FuzzyNamed(name string) QueryFunc {
 	return func(b sq.SelectBuilder) sq.SelectBuilder {
