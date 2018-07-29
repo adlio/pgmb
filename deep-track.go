@@ -6,8 +6,10 @@ import (
 )
 
 // DeepTrack represents an entry in the track table in the MusicBrainz
-// database., with deep associations (ReleaseGroup, and Artist in
-// particular) bubbled up for convenience.
+// database, with deep associations bubbled up to the top level for
+// convenience (ArtistCredit, Release and ReleaseGroup in particular).
+// This might also have been called AlbumTrack.
+//
 type DeepTrack struct {
 	ID             int64
 	GID            uuid.UUID
