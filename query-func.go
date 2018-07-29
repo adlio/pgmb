@@ -6,7 +6,6 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
-	uuid "github.com/satori/go.uuid"
 )
 
 // QueryFunc allows chaining of squirrel statements
@@ -29,13 +28,6 @@ func EchoSQL() QueryFunc {
 		}
 		fmt.Println("------------------------------ End EchoSQL() -------------------------------")
 		return b
-	}
-}
-
-// WithGID builds a QueryFunc to exactly match the GID field on any table
-func WithGID(gid uuid.UUID) QueryFunc {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Where("gid = ?", fmt.Sprintf("%s", gid.String()))
 	}
 }
 
