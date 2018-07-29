@@ -92,9 +92,6 @@ func ArtistMap(db DB, ids []int64) (artists map[int64]*Artist, err error) {
 // on < 100 records of input.
 //
 func loadArtistAliases(db DB, artists []*Artist) error {
-	var err error
-	var aliases []*ArtistAlias
-
 	ids := make([]int64, len(artists))
 	lu := make(map[int64]*Artist)
 
@@ -106,7 +103,7 @@ func loadArtistAliases(db DB, artists []*Artist) error {
 		artist.Aliases = make([]*ArtistAlias, 0)
 	}
 
-	aliases, err = FindArtistAliases(db, Where("artist IN (?)", ids))
+	aliases, err := FindArtistAliases(db, Where("artist IN (?)", ids))
 	if err != nil {
 		return err
 	}
