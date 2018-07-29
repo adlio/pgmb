@@ -85,6 +85,17 @@ func FindArtists(db DB, clauses ...QueryFunc) (artists []*Artist, err error) {
 	return
 }
 
+// ArtistMap returns a mapping of Artist IDs to Artist structs, including
+// only the ArtistID which was supplied.
+func ArtistMap(db DB, ids []int64) (artists map[int64]*Artist, err error) {
+	artists = make(map[int64]*Artist)
+	results, err := FindArtists(db, Where("id IN (?)", ids))
+	for _, artist := range results {
+		artists[artist.ID] = artist
+	}
+	return
+}
+
 // loadArtistAliases lodas and attaches all ArtistAliases for the supplied
 // slice of Artist via a single SQL query. This function is designed to operate
 // on < 100 records of input.
