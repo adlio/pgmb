@@ -1,7 +1,6 @@
 package pgmb
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -35,7 +34,9 @@ func TestFindRecordingsByNameAndArtist(t *testing.T) {
 		t.Fatalf("No results")
 	}
 
-	for _, recording := range recordings {
-		fmt.Printf("%s %s by %s\n", recording.GID, recording.Name, recording.ArtistCredit.Name)
-	}
+	/*
+		for _, recording := range recordings {
+			fmt.Printf("%s %s by %s\n", recording.GID, recording.Name, recording.ArtistCredit.Name)
+		}
+	*/
 }
