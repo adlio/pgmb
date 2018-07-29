@@ -11,7 +11,7 @@ func TestFindRecordingsByFuzzyNameAndArtist(t *testing.T) {
 		t.Error(err)
 	}
 
-	recordings, err := FindRecordings(TESTDB, Where("lower(name) % lower(?)", "Like a Virgin"), ArtistCreditIn(madonnas))
+	recordings, err := FindRecordings(TESTDB, Where("lower(name) % lower(?) AND artist_credit IN (?)", "Like a Virgin", madonnas.MBIDs()))
 	if err != nil {
 		t.Error(err)
 	}
@@ -26,7 +26,7 @@ func TestFindRecordingsByNameAndArtist(t *testing.T) {
 		t.Error(err)
 	}
 
-	recordings, err := FindRecordings(TESTDB, Where("lower(name) = lower(?)", "Like a Virgin"), ArtistCreditIn(madonnas))
+	recordings, err := FindRecordings(TESTDB, Where("lower(name) = lower(?) AND artist_credit IN (?)", "Like a Virgin", madonnas.MBIDs()))
 	if err != nil {
 		t.Error(err)
 	}

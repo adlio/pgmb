@@ -10,7 +10,7 @@ func TestFindTracksByNameAndArtist(t *testing.T) {
 		t.Error(err)
 	}
 
-	tracks, err := FindTracks(TESTDB, Where("lower(name) = lower(?)", "Like a Virgin"), ArtistCreditIn(madonnas))
+	tracks, err := FindTracks(TESTDB, Where("lower(name) = lower(?) AND artist_credit IN (?)", "Like a Virgin", madonnas.MBIDs()))
 	if err != nil {
 		t.Error(err)
 	}

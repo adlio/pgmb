@@ -2,7 +2,6 @@ package pgmb
 
 import (
 	sq "github.com/Masterminds/squirrel"
-	"github.com/jmoiron/sqlx"
 )
 
 // ArtistCredit represents an entry in the MusicBrainz
@@ -12,6 +11,18 @@ type ArtistCredit struct {
 	Name        string
 	ArtistCount int64 `db:"artist_count"`
 	RefCount    int64 `db:"ref_count"`
+}
+
+// ArtistCreditCollection is a slice of ArtistCredits
+type ArtistCreditCollection []*ArtistCredit
+
+// MBIDs returns the IDs of the collection
+func (acc ArtistCreditCollection) MBIDs() []int64 {
+	ids := make([]int64, len(acc))
+	for i := range acc {
+		ids[i] = acc[i].ID
+	}
+	return ids
 }
 
 // IsVariousArtists indicates whether the ArtistCredit represents
@@ -24,8 +35,8 @@ func (ac *ArtistCredit) IsVariousArtists() bool {
 // FindArtistCredits retrieves a slice of ArtistCredit which
 // match the supplied criteria.
 //
-func FindArtistCredits(db DB, clauses ...QueryFunc) (credits []*ArtistCredit, err error) {
-	credits = make([]*ArtistCredit, 0)
+func FindArtistCredits(db DB, clauses ...QueryFunc) (credits ArtistCreditCollection, err error) {
+	credits = make(ArtistCreditCollection, 0)
 	err = Select(db, &credits, ArtistCreditQuery(), clauses...)
 	return
 }
@@ -46,18 +57,4 @@ func ArtistCreditQuery() sq.SelectBuilder {
 	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
 		Select("id, name, artist_count, ref_count").
 		From("artist_credit")
-}
-
-// ArtistCreditIn builds a QueryFunc for filtering a resultset to a specific
-// list of supplied ArtistCredits.
-//
-func ArtistCreditIn(acs []*ArtistCredit) QueryFunc {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		ids := make([]interface{}, len(acs))
-		for i, ac := range acs {
-			ids[i] = ac.ID
-		}
-		sql, args, _ := sqlx.In("artist_credit IN (?)", ids)
-		return b.Where(sql, args...)
-	}
 }

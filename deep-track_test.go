@@ -11,12 +11,7 @@ func TestFindDeepTracksByNameAndArtist(t *testing.T) {
 		t.Error(err)
 	}
 
-	ids := make([]int64, len(madonnas)+1)
-	for i, ac := range madonnas {
-		ids[i] = ac.ID
-	}
-
-	tracks, err := FindDeepTracks(TESTDB, Where("lower(track.name) = lower(?) AND track.artist_credit IN (?)", "Like a Virgin", ids))
+	tracks, err := FindDeepTracks(TESTDB, Where("lower(track.name) = lower(?) AND track.artist_credit IN (?)", "Like a Virgin", madonnas.MBIDs()))
 	if err != nil {
 		t.Error(err)
 	}
