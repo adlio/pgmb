@@ -25,7 +25,7 @@ func FindAreas(db DB, clauses ...QueryFunc) (areas []*Area, err error) {
 //
 func AreaMap(db DB, ids []int64) (areas map[int64]*Area, err error) {
 	areas = make(map[int64]*Area)
-	results, err := FindAreas(db, IDIn(ids))
+	results, err := FindAreas(db, Where("id IN (?)", ids))
 	for _, area := range results {
 		areas[area.ID] = area
 	}

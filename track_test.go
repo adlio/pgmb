@@ -5,12 +5,12 @@ import (
 )
 
 func TestFindTracksByNameAndArtist(t *testing.T) {
-	madonnas, err := FindArtistCredits(TESTDB, Named("Madonna"))
+	madonnas, err := FindArtistCredits(TESTDB, Where("lower(name) = lower(?)", "Madonna"))
 	if err != nil {
 		t.Error(err)
 	}
 
-	tracks, err := FindTracks(TESTDB, Named("Like a Virgin"), ArtistCreditIn(madonnas))
+	tracks, err := FindTracks(TESTDB, Where("lower(name) = lower(?)", "Like a Virgin"), ArtistCreditIn(madonnas))
 	if err != nil {
 		t.Error(err)
 	}

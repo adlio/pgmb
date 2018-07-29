@@ -39,21 +39,6 @@ func WithGID(gid uuid.UUID) QueryFunc {
 	}
 }
 
-// IDIn builds a QueryFunc for records matching the supplied IDs
-func IDIn(ids []int64) QueryFunc {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		sql, args, _ := sqlx.In("id IN (?)", ids)
-		return b.Where(sql, args...)
-	}
-}
-
-// Named builds a QueryFunc to exactly match the name fields on any table
-func Named(name string) QueryFunc {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Where("name = ?", name)
-	}
-}
-
 // Where is a wrapper to a Squirrel Where()
 func Where(cmd string, args ...interface{}) QueryFunc {
 	return func(b sq.SelectBuilder) sq.SelectBuilder {
@@ -62,13 +47,6 @@ func Where(cmd string, args ...interface{}) QueryFunc {
 			panic(err)
 		}
 		return b.Where(sql, args...)
-	}
-}
-
-// FuzzyNamed builds a QueryFunc to fuzzy-match the name field on any table
-func FuzzyNamed(name string) QueryFunc {
-	return func(b sq.SelectBuilder) sq.SelectBuilder {
-		return b.Where("lower(name) % lower(?)", name)
 	}
 }
 

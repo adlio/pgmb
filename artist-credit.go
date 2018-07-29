@@ -33,7 +33,7 @@ func FindArtistCredits(db DB, clauses ...QueryFunc) (credits []*ArtistCredit, er
 // ArtistCreditMap returns a mapping of ArtistCredit IDs to ArtistCredit structs
 func ArtistCreditMap(db DB, ids []int64) (credits map[int64]*ArtistCredit, err error) {
 	credits = make(map[int64]*ArtistCredit)
-	results, err := FindArtistCredits(db, IDIn(ids))
+	results, err := FindArtistCredits(db, Where("id IN (?)", ids))
 	for _, credit := range results {
 		credits[credit.ID] = credit
 	}

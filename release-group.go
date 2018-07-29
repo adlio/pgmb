@@ -64,7 +64,7 @@ func FindReleaseGroups(db DB, clauses ...QueryFunc) (groups []*ReleaseGroup, err
 // ReleaseGroupMap returns a mapping of ReleaseGroup IDs to ReleaseGroup structs
 func ReleaseGroupMap(db DB, ids []int64) (groups map[int64]*ReleaseGroup, err error) {
 	groups = make(map[int64]*ReleaseGroup)
-	results, err := FindReleaseGroups(db, IDIn(ids))
+	results, err := FindReleaseGroups(db, Where("id IN (?)", ids))
 	for _, group := range results {
 		groups[group.ID] = group
 	}

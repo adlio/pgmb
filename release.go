@@ -74,7 +74,7 @@ func FindReleases(db DB, clauses ...QueryFunc) (releases []*Release, err error) 
 // ReleaseMap returns a mapping of Release IDs to Release structs
 func ReleaseMap(db DB, ids []int64) (releases map[int64]*Release, err error) {
 	releases = make(map[int64]*Release)
-	results, err := FindReleases(db, IDIn(ids))
+	results, err := FindReleases(db, Where("id IN (?)", ids))
 	for _, release := range results {
 		releases[release.ID] = release
 	}

@@ -35,7 +35,7 @@ func FindRecordings(db DB, clauses ...QueryFunc) (recordings []*Recording, err e
 // RecordingMap returns a mapping of Recording IDs to Recording structs
 func RecordingMap(db DB, ids []int64) (recordings map[int64]*Recording, err error) {
 	recordings = make(map[int64]*Recording)
-	results, err := FindRecordings(db, IDIn(ids))
+	results, err := FindRecordings(db, Where("id IN (?)", ids))
 	for _, recording := range results {
 		recordings[recording.ID] = recording
 	}
