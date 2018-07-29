@@ -5,17 +5,8 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 
-	"github.com/jmoiron/sqlx"
 	uuid "github.com/satori/go.uuid"
 )
-
-// ArtistAlias holds an alternative name for an Artist
-type ArtistAlias struct {
-	ID       int64
-	ArtistID int64 `db:"artist"`
-	Name     string
-	SortName string `db:"sort_name"`
-}
 
 // Artist represents an entry in the artist table in
 // the MusicBrainz database.
@@ -115,17 +106,7 @@ func loadArtistAliases(db DB, artists []*Artist) error {
 		artist.Aliases = make([]*ArtistAlias, 0)
 	}
 
-	// Fetch all aliases based on those IDs
-	sql := `
-		SELECT id, artist, name, sort_name
-		FROM artist_alias
-		WHERE artist IN (?)
-	`
-	sql, args, err := sqlx.In(sql, ids)
-	if err != nil {
-		return err
-	}
-	err = db.Select(&aliases, db.Rebind(sql), args...)
+	aliases, err = FindArtistAliases(db, Where("artist IN (?)", ids))
 	if err != nil {
 		return err
 	}
