@@ -5,6 +5,16 @@ import (
 	"testing"
 )
 
+func TestFindDeepTracksByRecordingGID(t *testing.T) {
+
+	tracks, err := FindDeepTracks(TESTDB, Where("recording.gid = ?", "c0d4a5c9-6992-4b99-bcf2-388dd6be19c0"))
+	if err != nil {
+		t.Error(err)
+	}
+	for _, track := range tracks {
+		fmt.Printf("%s from %s by %s (%d artists) has %d artists: %s\n", track.Name, track.ReleaseGroup.Name, track.ReleaseGroup.ArtistCredit.Name, track.ReleaseGroup.ArtistCredit.ArtistCount, len(track.ArtistCredit.Artists), track.ArtistCredit.Name)
+	}
+}
 func TestFindDeepTracksByNameAndArtist(t *testing.T) {
 	madonnas, err := FindArtistCredits(TESTDB, Where("lower(artist_credit.name) = lower(?)", "Madonna"))
 	if err != nil {

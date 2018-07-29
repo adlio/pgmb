@@ -69,7 +69,8 @@ func DeepTrackQuery() sq.SelectBuilder {
 		`).
 		From("track").
 		Join("medium ON medium.id = track.medium").
-		Join("release ON release.id = medium.release")
+		Join("release ON release.id = medium.release").
+		Join("recording ON recording.id = track.recording")
 	return q
 }
 
