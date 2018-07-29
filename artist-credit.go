@@ -62,6 +62,7 @@ func FindArtistCredits(db DB, clauses ...QueryFunc) (credits ArtistCreditCollect
 		return
 	}
 
+	err = loadArtistCreditArtists(db, credits)
 	return
 }
 
