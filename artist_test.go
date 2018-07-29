@@ -23,7 +23,7 @@ func TestGetArtistsByID(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	artist, err := GetArtist(TESTDB, WithGID(uuid))
+	artist, err := GetArtist(TESTDB, Where("gid = ?", uuid))
 	if err != nil {
 		t.Error(err)
 	}

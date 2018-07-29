@@ -8,7 +8,7 @@ import (
 
 func TestReleaseGroup40OzToFreedom(t *testing.T) {
 	rid, _ := uuid.FromString("8e874f9b-7630-3a4c-baf4-73e0e553b2b4")
-	releaseGroup, err := GetReleaseGroup(TESTDB, WithGID(rid))
+	releaseGroup, err := GetReleaseGroup(TESTDB, Where("gid = ?", rid))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,7 +35,7 @@ func TestReleaseGroup40OzToFreedom(t *testing.T) {
 
 func TestReleaseGroupLiveWideOpen(t *testing.T) {
 	rid, _ := uuid.FromString("12990b55-d95f-3b5c-9ae6-d95b0c8c44d4")
-	releaseGroup, err := GetReleaseGroup(TESTDB, WithGID(rid))
+	releaseGroup, err := GetReleaseGroup(TESTDB, Where("gid = ?", rid))
 	if err != nil {
 		t.Fatal(err)
 	}
