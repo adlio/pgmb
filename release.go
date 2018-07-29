@@ -1,6 +1,8 @@
 package pgmb
 
 import (
+	"time"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/satori/go.uuid"
 )
@@ -18,9 +20,27 @@ type Release struct {
 	PackagingID    *int64            `db:"packaging"`
 	Packaging      *ReleasePackaging `db:"-"`
 	ReleaseGroupID int64             `db:"release_group"`
+	ReleaseEvents  []*ReleaseEvent   `db:"-"`
 	Barcode        *string
 	Comment        string
 	Quality        int64
+}
+
+// EarliestReleaseDate finds the Time of the earliest attached
+// ReleaseEvent
+func (r *Release) EarliestReleaseDate() time.Time {
+	var t time.Time
+	for _, event := range r.ReleaseEvents {
+		if t.IsZero() {
+			t = event.Date()
+		} else {
+			d := event.Date()
+			if d.Before(t) {
+				t = d
+			}
+		}
+	}
+	return t
 }
 
 // FindReleases retrieves a slice of Release based on a dynamically built query
@@ -37,12 +57,27 @@ func FindReleases(db DB, clauses ...QueryFunc) (releases []*Release, err error) 
 		return
 	}
 
+	err = loadReleaseEvents(db, releases)
+	if err != nil {
+		return
+	}
+
 	err = loadReleaseStatuses(db, releases)
 	if err != nil {
 		return
 	}
 
 	err = loadReleasePackagings(db, releases)
+	return
+}
+
+// ReleaseMap returns a mapping of Release IDs to Release structs
+func ReleaseMap(db DB, ids []int64) (releases map[int64]*Release, err error) {
+	releases = make(map[int64]*Release)
+	results, err := FindReleases(db, IDIn(ids))
+	for _, release := range results {
+		releases[release.ID] = release
+	}
 	return
 }
 
@@ -86,6 +121,18 @@ func loadReleaseArtistCredits(db DB, releases []*Release) error {
 	credits, err := ArtistCreditMap(db, ids)
 	for _, release := range releases {
 		release.ArtistCredit, _ = credits[release.ArtistCreditID]
+	}
+	return err
+}
+
+func loadReleaseEvents(db DB, releases []*Release) error {
+	ids := make([]int64, len(releases))
+	for i, rel := range releases {
+		ids[i] = rel.ID
+	}
+	events, err := ReleaseEventMap(db, ids)
+	for _, release := range releases {
+		release.ReleaseEvents = events[release.ID]
 	}
 	return err
 }
