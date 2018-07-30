@@ -10,10 +10,13 @@ type ArtistAlias struct {
 	SortName string `db:"sort_name"`
 }
 
+// ArtistAliasCollection is an alias for a slice of ArtistAlias
+type ArtistAliasCollection []*ArtistAlias
+
 // FindArtistAliases retrieves a slice of ArtistAlias based on a dynamic query
 //
-func FindArtistAliases(db DB, clauses ...QueryFunc) (aliases []*ArtistAlias, err error) {
-	aliases = make([]*ArtistAlias, 0)
+func FindArtistAliases(db DB, clauses ...QueryFunc) (aliases ArtistAliasCollection, err error) {
+	aliases = make(ArtistAliasCollection, 0)
 	err = Select(db, &aliases, ArtistAliasQuery(), clauses...)
 	if err != nil {
 		return

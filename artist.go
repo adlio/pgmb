@@ -21,6 +21,9 @@ type Artist struct {
 	LastUpdated   time.Time
 }
 
+// ArtistCollection is an alias type for a slice of Artist
+type ArtistCollection []*Artist
+
 // IsVariousArtists indicates whether the Artist represents a
 // "Various Artists" record.
 //
@@ -57,14 +60,14 @@ func GetArtist(db DB, clauses ...QueryFunc) (*Artist, error) {
 	if err != nil {
 		return artist, err
 	}
-	err = loadArtistAliases(db, []*Artist{artist})
+	err = loadArtistAliases(db, ArtistCollection{artist})
 	return artist, err
 }
 
 // FindArtists retrieves a slice of Artist based on a dynamic query
 //
-func FindArtists(db DB, clauses ...QueryFunc) (artists []*Artist, err error) {
-	artists = make([]*Artist, 0)
+func FindArtists(db DB, clauses ...QueryFunc) (artists ArtistCollection, err error) {
+	artists = make(ArtistCollection, 0)
 	err = Select(db, &artists, ArtistQuery(), clauses...)
 	if err != nil {
 		return
@@ -98,7 +101,7 @@ func ArtistQuery() sq.SelectBuilder {
 // slice of Artist via a single SQL query. This function is designed to operate
 // on < 100 records of input.
 //
-func loadArtistAliases(db DB, artists []*Artist) error {
+func loadArtistAliases(db DB, artists ArtistCollection) error {
 	ids := make([]int64, len(artists))
 	lu := make(map[int64]*Artist)
 
