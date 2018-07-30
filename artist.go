@@ -46,13 +46,6 @@ func ArtistFuzzyNameOrAlias(name string) QueryFunc {
 	}
 }
 
-// ArtistQuery builds the default query for working with the artist table
-func ArtistQuery() sq.SelectBuilder {
-	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
-		Select("id, gid, name, sort_name, begin_date_year, end_date_year").
-		From("artist")
-}
-
 // GetArtist fetches a single artist matching the supplied criteria
 //
 func GetArtist(db DB, clauses ...QueryFunc) (*Artist, error) {
@@ -92,6 +85,13 @@ func ArtistMap(db DB, ids []int64) (artists map[int64]*Artist, err error) {
 		artists[artist.ID] = artist
 	}
 	return
+}
+
+// ArtistQuery builds the default query for working with the artist table
+func ArtistQuery() sq.SelectBuilder {
+	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Select("id, gid, name, sort_name, begin_date_year, end_date_year").
+		From("artist")
 }
 
 // loadArtistAliases lodas and attaches all ArtistAliases for the supplied

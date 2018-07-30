@@ -10,6 +10,8 @@ type ArtistAlias struct {
 	SortName string `db:"sort_name"`
 }
 
+// FindArtistAliases retrieves a slice of ArtistAlias based on a dynamic query
+//
 func FindArtistAliases(db DB, clauses ...QueryFunc) (aliases []*ArtistAlias, err error) {
 	aliases = make([]*ArtistAlias, 0)
 	err = Select(db, &aliases, ArtistAliasQuery(), clauses...)
