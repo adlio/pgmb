@@ -45,13 +45,6 @@ func (acc ArtistCreditCollection) UniqueArtistIDs() []int64 {
 	return ids
 }
 
-// IsVariousArtists indicates whether the ArtistCredit represents
-// a "Various Artists" record.
-//
-func (ac *ArtistCredit) IsVariousArtists() bool {
-	return ac.ID == 1
-}
-
 // FindArtistCredits retrieves a slice of ArtistCredit which
 // match the supplied criteria.
 //

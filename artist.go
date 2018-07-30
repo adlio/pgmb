@@ -24,13 +24,6 @@ type Artist struct {
 // ArtistCollection is an alias type for a slice of Artist
 type ArtistCollection []*Artist
 
-// IsVariousArtists indicates whether the Artist represents a
-// "Various Artists" record.
-//
-func (a *Artist) IsVariousArtists() bool {
-	return a.ID == 1
-}
-
 // ArtistFuzzyNameOrAlias returns a QueryFunc which matches artists
 // whose name or alias names fuzzy-match the supplied string.
 func ArtistFuzzyNameOrAlias(name string) QueryFunc {
