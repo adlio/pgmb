@@ -20,9 +20,12 @@ type Recording struct {
 	LastUpdated    time.Time
 }
 
+// RecordingCollection is an alias for a slice of Recording
+type RecordingCollection []*Recording
+
 // FindRecordings returns recordings matching the supplied criteria
-func FindRecordings(db DB, clauses ...QueryFunc) (recordings []*Recording, err error) {
-	recordings = make([]*Recording, 0)
+func FindRecordings(db DB, clauses ...QueryFunc) (recordings RecordingCollection, err error) {
+	recordings = make(RecordingCollection, 0)
 	err = Select(db, &recordings, RecordingQuery(), clauses...)
 	if err != nil {
 		return
@@ -49,7 +52,7 @@ func RecordingQuery() sq.SelectBuilder {
 		From("recording")
 }
 
-func loadRecordingArtistCredits(db DB, recordings []*Recording) error {
+func loadRecordingArtistCredits(db DB, recordings RecordingCollection) error {
 	ids := make([]int64, len(recordings))
 	for i, rec := range recordings {
 		ids[i] = rec.ArtistCreditID
