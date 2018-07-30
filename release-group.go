@@ -22,6 +22,9 @@ type ReleaseGroup struct {
 	Comment          string
 }
 
+// ReleaseGroupCollection is an alias for a slice of ReleaseGroup
+type ReleaseGroupCollection []*ReleaseGroup
+
 // GetReleaseGroup returns the first ReleaseGroup result from the supplied dynamic query
 // parameters.
 //
@@ -40,8 +43,8 @@ func GetReleaseGroup(db DB, clauses ...QueryFunc) (releaseGroup *ReleaseGroup, e
 // FindReleaseGroups retrieves a slice of ReleaseGroup based on a dynamically built
 // query.
 //
-func FindReleaseGroups(db DB, clauses ...QueryFunc) (groups []*ReleaseGroup, err error) {
-	groups = make([]*ReleaseGroup, 0)
+func FindReleaseGroups(db DB, clauses ...QueryFunc) (groups ReleaseGroupCollection, err error) {
+	groups = make(ReleaseGroupCollection, 0)
 	err = Select(db, &groups, ReleaseGroupQuery(), clauses...)
 	if err != nil {
 		return
@@ -86,7 +89,7 @@ func ReleaseGroupQuery() sq.SelectBuilder {
 		From("release_group")
 }
 
-func loadReleaseGroupArtistCredits(db DB, groups []*ReleaseGroup) error {
+func loadReleaseGroupArtistCredits(db DB, groups ReleaseGroupCollection) error {
 	ids := make([]int64, len(groups))
 	for i, rel := range groups {
 		ids[i] = rel.ArtistCreditID
@@ -98,7 +101,7 @@ func loadReleaseGroupArtistCredits(db DB, groups []*ReleaseGroup) error {
 	return err
 }
 
-func loadReleaseGroupPrimaryTypes(db DB, groups []*ReleaseGroup) error {
+func loadReleaseGroupPrimaryTypes(db DB, groups ReleaseGroupCollection) error {
 	types, err := ReleaseGroupPrimaryTypeMap(db)
 	if err != nil {
 		return err
@@ -111,7 +114,7 @@ func loadReleaseGroupPrimaryTypes(db DB, groups []*ReleaseGroup) error {
 	return nil
 }
 
-func loadReleaseGroupSecondaryTypes(db DB, groups []*ReleaseGroup) error {
+func loadReleaseGroupSecondaryTypes(db DB, groups ReleaseGroupCollection) error {
 	var err error
 	typeMap, err := ReleaseGroupSecondaryTypeMap(db)
 	for _, group := range groups {
