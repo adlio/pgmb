@@ -2,6 +2,7 @@ package pgmb
 
 import (
 	"fmt"
+	"io"
 	"log"
 
 	sq "github.com/Masterminds/squirrel"
@@ -16,7 +17,7 @@ func Where(cmd string, args ...interface{}) QueryFunc {
 	return func(b sq.SelectBuilder) sq.SelectBuilder {
 		sql, args, err := sqlx.In(cmd, args...)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		return b.Where(sql, args...)
 	}
@@ -32,19 +33,19 @@ func Limit(n uint64) QueryFunc {
 // EchoSQL can be inserted in a find command to output the SQL and arguments accumulated to
 // that point.
 //
-func EchoSQL() QueryFunc {
+func EchoSQL(w io.Writer) QueryFunc {
 	return func(b sq.SelectBuilder) sq.SelectBuilder {
 		sql, args, err := b.ToSql()
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println("------------------------------- EchoSQL() ----------------------------------")
-		fmt.Println(sql)
+		fmt.Fprintln(w, "------------------------------- EchoSQL() ----------------------------------")
+		fmt.Fprintln(w, sql)
 		for i, arg := range args {
-			fmt.Printf("--- arg %d ----\n", i)
-			fmt.Println(arg)
+			fmt.Fprintf(w, "--- arg %d ----\n", i)
+			fmt.Fprintln(w, arg)
 		}
-		fmt.Println("------------------------------ End EchoSQL() -------------------------------")
+		fmt.Fprintln(w, "------------------------------ End EchoSQL() -------------------------------")
 		return b
 	}
 }

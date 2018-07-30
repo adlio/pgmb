@@ -18,9 +18,6 @@ type ArtistAliasCollection []*ArtistAlias
 func FindArtistAliases(db DB, clauses ...QueryFunc) (aliases ArtistAliasCollection, err error) {
 	aliases = make(ArtistAliasCollection, 0)
 	err = Select(db, &aliases, ArtistAliasQuery(), clauses...)
-	if err != nil {
-		return
-	}
 	return
 }
 
