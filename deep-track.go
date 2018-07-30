@@ -28,10 +28,13 @@ type DeepTrack struct {
 	IsDataTrack    bool `db:"is_data_track"`
 }
 
+// DeepTrackCollection is an alias for a slice of DeepTrack
+type DeepTrackCollection []*DeepTrack
+
 // FindDeepTracks rertrieves a slice of Track based on a dynamically built query
 //
-func FindDeepTracks(db DB, clauses ...QueryFunc) (tracks []*DeepTrack, err error) {
-	tracks = make([]*DeepTrack, 0)
+func FindDeepTracks(db DB, clauses ...QueryFunc) (tracks DeepTrackCollection, err error) {
+	tracks = make(DeepTrackCollection, 0)
 	err = Select(db, &tracks, DeepTrackQuery(), clauses...)
 	if err != nil {
 		return
@@ -74,7 +77,7 @@ func DeepTrackQuery() sq.SelectBuilder {
 	return q
 }
 
-func loadDeepTrackArtistCredits(db DB, tracks []*DeepTrack) error {
+func loadDeepTrackArtistCredits(db DB, tracks DeepTrackCollection) error {
 	ids := make([]int64, len(tracks))
 	for i, rel := range tracks {
 		ids[i] = rel.ArtistCreditID
@@ -86,7 +89,7 @@ func loadDeepTrackArtistCredits(db DB, tracks []*DeepTrack) error {
 	return err
 }
 
-func loadDeepTrackRecordings(db DB, tracks []*DeepTrack) error {
+func loadDeepTrackRecordings(db DB, tracks DeepTrackCollection) error {
 	ids := make([]int64, len(tracks))
 	for i, rel := range tracks {
 		ids[i] = rel.RecordingID
@@ -98,7 +101,7 @@ func loadDeepTrackRecordings(db DB, tracks []*DeepTrack) error {
 	return err
 }
 
-func loadDeepTrackReleases(db DB, tracks []*DeepTrack) error {
+func loadDeepTrackReleases(db DB, tracks DeepTrackCollection) error {
 	ids := make([]int64, len(tracks))
 	for i, rel := range tracks {
 		ids[i] = rel.ReleaseID
@@ -110,7 +113,7 @@ func loadDeepTrackReleases(db DB, tracks []*DeepTrack) error {
 	return err
 }
 
-func loadDeepTrackReleaseGroups(db DB, tracks []*DeepTrack) error {
+func loadDeepTrackReleaseGroups(db DB, tracks DeepTrackCollection) error {
 	ids := make([]int64, len(tracks))
 	for i, rel := range tracks {
 		ids[i] = rel.ReleaseGroupID
