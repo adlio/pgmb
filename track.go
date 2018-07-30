@@ -21,10 +21,13 @@ type Track struct {
 	IsDataTrack    bool `db:"is_data_track"`
 }
 
+// TrackCollection is an alias for a slice of Track
+type TrackCollection []*Track
+
 // FindTracks rertrieves a slice of Track based on a dynamically built query
 //
-func FindTracks(db DB, clauses ...QueryFunc) (tracks []*Track, err error) {
-	tracks = make([]*Track, 0)
+func FindTracks(db DB, clauses ...QueryFunc) (tracks TrackCollection, err error) {
+	tracks = make(TrackCollection, 0)
 	err = Select(db, &tracks, TrackQuery(), clauses...)
 	if err != nil {
 		return
@@ -51,7 +54,7 @@ func TrackQuery() sq.SelectBuilder {
 		From("track")
 }
 
-func loadTrackArtistCredits(db DB, tracks []*Track) error {
+func loadTrackArtistCredits(db DB, tracks TrackCollection) error {
 	ids := make([]int64, len(tracks))
 	for i, rel := range tracks {
 		ids[i] = rel.ArtistCreditID
@@ -63,7 +66,7 @@ func loadTrackArtistCredits(db DB, tracks []*Track) error {
 	return err
 }
 
-func loadTrackRecordings(db DB, tracks []*Track) error {
+func loadTrackRecordings(db DB, tracks TrackCollection) error {
 	ids := make([]int64, len(tracks))
 	for i, rel := range tracks {
 		ids[i] = rel.RecordingID
