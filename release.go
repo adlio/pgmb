@@ -26,6 +26,9 @@ type Release struct {
 	Quality        int64
 }
 
+// ReleaseCollection is an alias for a slice of Release
+type ReleaseCollection []*Release
+
 // EarliestReleaseDate finds the Time of the earliest attached
 // ReleaseEvent
 func (r *Release) EarliestReleaseDate() time.Time {
@@ -45,8 +48,8 @@ func (r *Release) EarliestReleaseDate() time.Time {
 
 // FindReleases retrieves a slice of Release based on a dynamically built query
 //
-func FindReleases(db DB, clauses ...QueryFunc) (releases []*Release, err error) {
-	releases = make([]*Release, 0)
+func FindReleases(db DB, clauses ...QueryFunc) (releases ReleaseCollection, err error) {
+	releases = make(ReleaseCollection, 0)
 	err = Select(db, &releases, ReleaseQuery(), clauses...)
 	if err != nil {
 		return
@@ -113,7 +116,7 @@ func WhereReleaseIncludesRecording(rid uuid.UUID) QueryFunc {
 	return b
 }
 
-func loadReleaseArtistCredits(db DB, releases []*Release) error {
+func loadReleaseArtistCredits(db DB, releases ReleaseCollection) error {
 	ids := make([]int64, len(releases))
 	for i, rel := range releases {
 		ids[i] = rel.ArtistCreditID
@@ -125,7 +128,7 @@ func loadReleaseArtistCredits(db DB, releases []*Release) error {
 	return err
 }
 
-func loadReleaseEvents(db DB, releases []*Release) error {
+func loadReleaseEvents(db DB, releases ReleaseCollection) error {
 	ids := make([]int64, len(releases))
 	for i, rel := range releases {
 		ids[i] = rel.ID
@@ -137,7 +140,7 @@ func loadReleaseEvents(db DB, releases []*Release) error {
 	return err
 }
 
-func loadReleaseStatuses(db DB, releases []*Release) error {
+func loadReleaseStatuses(db DB, releases ReleaseCollection) error {
 	statuses, err := ReleaseStatusMap(db)
 	if err != nil {
 		return err
@@ -150,7 +153,7 @@ func loadReleaseStatuses(db DB, releases []*Release) error {
 	return nil
 }
 
-func loadReleasePackagings(db DB, releases []*Release) error {
+func loadReleasePackagings(db DB, releases ReleaseCollection) error {
 	packagings, err := ReleasePackagingMap(db)
 	if err != nil {
 		return err
