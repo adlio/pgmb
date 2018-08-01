@@ -2,6 +2,7 @@ package pgmb
 
 import (
 	sq "github.com/Masterminds/squirrel"
+	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"
 )
 
@@ -33,9 +34,9 @@ type DeepTrackCollection []*DeepTrack
 
 // FindDeepTracks rertrieves a slice of Track based on a dynamically built query
 //
-func FindDeepTracks(db DB, clauses ...QueryFunc) (tracks DeepTrackCollection, err error) {
+func FindDeepTracks(db DB, query sq.SelectBuilder) (tracks DeepTrackCollection, err error) {
 	tracks = make(DeepTrackCollection, 0)
-	err = Select(db, &tracks, DeepTrackQuery(), clauses...)
+	err = Select(db, &tracks, query)
 	if err != nil {
 		return
 	}
@@ -55,7 +56,9 @@ func FindDeepTracks(db DB, clauses ...QueryFunc) (tracks DeepTrackCollection, er
 		return
 	}
 
-	err = loadDeepTrackReleaseGroups(db, tracks)
+	/*
+		err = loadDeepTrackReleaseGroups(db, tracks)
+	*/
 	return
 }
 
@@ -95,10 +98,14 @@ func loadDeepTrackRecordings(db DB, tracks DeepTrackCollection) error {
 		ids[i] = rel.RecordingID
 	}
 	credits, err := RecordingMap(db, ids)
+	if err != nil {
+		err = errors.Wrap(err, "Error building RecordingMap in loadDeepTrackRecordings")
+		return err
+	}
 	for _, track := range tracks {
 		track.Recording, _ = credits[track.RecordingID]
 	}
-	return err
+	return nil
 }
 
 func loadDeepTrackReleases(db DB, tracks DeepTrackCollection) error {
@@ -107,10 +114,13 @@ func loadDeepTrackReleases(db DB, tracks DeepTrackCollection) error {
 		ids[i] = rel.ReleaseID
 	}
 	releases, err := ReleaseMap(db, ids)
+	if err != nil {
+		return errors.Wrap(err, "Error building ReleaseMap in loadDeepTrackReleases")
+	}
 	for _, track := range tracks {
 		track.Release, _ = releases[track.ReleaseID]
 	}
-	return err
+	return nil
 }
 
 func loadDeepTrackReleaseGroups(db DB, tracks DeepTrackCollection) error {

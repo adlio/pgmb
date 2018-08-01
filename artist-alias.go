@@ -1,7 +1,5 @@
 package pgmb
 
-import sq "github.com/Masterminds/squirrel"
-
 // ArtistAlias holds an alternative name for an Artist
 type ArtistAlias struct {
 	ID       int64
@@ -10,9 +8,7 @@ type ArtistAlias struct {
 	SortName string `db:"sort_name"`
 }
 
-// ArtistAliasCollection is an alias for a slice of ArtistAlias
-type ArtistAliasCollection []*ArtistAlias
-
+// UniqueArtistIDs pulls the unique artist IDs from the slice of ArtistAlias
 func (c ArtistAliasCollection) UniqueArtistIDs() []int64 {
 	idMap := make(map[int64]bool)
 	for _, a := range c {
@@ -23,19 +19,4 @@ func (c ArtistAliasCollection) UniqueArtistIDs() []int64 {
 		ids = append(ids, id)
 	}
 	return ids
-}
-
-// FindArtistAliases retrieves a slice of ArtistAlias based on a dynamic query
-//
-func FindArtistAliases(db DB, clauses ...QueryFunc) (aliases ArtistAliasCollection, err error) {
-	aliases = make(ArtistAliasCollection, 0)
-	err = Select(db, &aliases, ArtistAliasQuery(), clauses...)
-	return
-}
-
-// ArtistAliasQuery is the base query for working with artist_alias data
-func ArtistAliasQuery() sq.SelectBuilder {
-	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
-		Select("id, artist, name, sort_name").
-		From("artist_alias")
 }

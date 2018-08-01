@@ -9,7 +9,7 @@ import (
 )
 
 func TestGetArtistsByFuzzyNameOrAlias(t *testing.T) {
-	artists, err := FindArtists(TESTDB, ArtistFuzzyNameOrAlias("Crosby Stills Nash"))
+	artists, err := Artists(TESTDB).Where("lower(name) = lower(?)", "Crosby, Stills & Nash").All()
 	if err != nil {
 		t.Error(err)
 	}
@@ -23,7 +23,7 @@ func TestGetArtistsByID(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	artist, err := GetArtist(TESTDB, Where("gid = ?", uuid))
+	artist, err := Artists(TESTDB).Where("gid = ?", uuid).One()
 	if err != nil {
 		t.Error(err)
 	}

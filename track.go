@@ -26,9 +26,9 @@ type TrackCollection []*Track
 
 // FindTracks rertrieves a slice of Track based on a dynamically built query
 //
-func FindTracks(db DB, clauses ...QueryFunc) (tracks TrackCollection, err error) {
+func FindTracks(db DB, query sq.SelectBuilder) (tracks TrackCollection, err error) {
 	tracks = make(TrackCollection, 0)
-	err = Select(db, &tracks, TrackQuery(), clauses...)
+	err = Select(db, &tracks, query)
 	if err != nil {
 		return
 	}

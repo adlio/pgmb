@@ -21,9 +21,6 @@ type Artist struct {
 	LastUpdated   time.Time
 }
 
-// ArtistCollection is an alias type for a slice of Artist
-type ArtistCollection []*Artist
-
 // ArtistFuzzyNameOrAlias returns a QueryFunc which matches artists
 // whose name or alias names fuzzy-match the supplied string.
 func ArtistFuzzyNameOrAlias(name string) QueryFunc {
@@ -42,52 +39,20 @@ func ArtistFuzzyNameOrAlias(name string) QueryFunc {
 	}
 }
 
-// GetArtist fetches a single artist matching the supplied criteria
-//
-func GetArtist(db DB, clauses ...QueryFunc) (*Artist, error) {
-	var err error
-	var artist *Artist
-	artist = &Artist{}
-
-	err = Get(db, artist, ArtistQuery().Limit(1), clauses...)
-	if err != nil {
-		return artist, err
-	}
-	err = loadArtistAliases(db, ArtistCollection{artist})
-	return artist, err
-}
-
-// FindArtists retrieves a slice of Artist based on a dynamic query
-//
-func FindArtists(db DB, clauses ...QueryFunc) (artists ArtistCollection, err error) {
-	artists = make(ArtistCollection, 0)
-	err = Select(db, &artists, ArtistQuery(), clauses...)
-	if err != nil {
-		return
-	}
-
-	if len(artists) > 0 {
-		err = loadArtistAliases(db, artists)
-	}
-	return
+func (q ArtistQuery) WithAssociations() ArtistQuery {
+	q.processors = append(q.processors, loadArtistAliases)
+	return q
 }
 
 // ArtistMap returns a mapping of Artist IDs to Artist structs, including
 // only the ArtistID which was supplied.
 func ArtistMap(db DB, ids []int64) (artists map[int64]*Artist, err error) {
 	artists = make(map[int64]*Artist)
-	results, err := FindArtists(db, Where("id IN (?)", ids))
+	results, err := Artists(db).WithAssociations().Where("id IN (?)", ids).All()
 	for _, artist := range results {
 		artists[artist.ID] = artist
 	}
 	return
-}
-
-// ArtistQuery builds the default query for working with the artist table
-func ArtistQuery() sq.SelectBuilder {
-	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
-		Select("id, gid, name, sort_name, begin_date_year, end_date_year").
-		From("artist")
 }
 
 // loadArtistAliases lodas and attaches all ArtistAliases for the supplied
@@ -106,7 +71,7 @@ func loadArtistAliases(db DB, artists ArtistCollection) error {
 		artist.Aliases = make([]*ArtistAlias, 0)
 	}
 
-	aliases, err := FindArtistAliases(db, Where("artist IN (?)", ids))
+	aliases, err := ArtistAliases(db).Where("artist IN (?)", ids).All()
 	if err != nil {
 		return err
 	}

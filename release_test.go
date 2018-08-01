@@ -8,7 +8,16 @@ import (
 
 func TestWhereReleaseIncludesRecording(t *testing.T) {
 	rid, _ := uuid.FromString("bb883fd9-ab17-434f-b336-9469a2b4f363")
-	releases, err := FindReleases(TESTDB, WhereReleaseIncludesRecording(rid))
+	releases, err := Releases(TESTDB).Where(`
+		EXISTS (
+			SELECT track.id
+			FROM track
+			JOIN medium ON medium.id = track.medium
+			JOIN recording ON recording.id = track.recording
+			WHERE recording.gid = ?
+			AND medium.release = release.id
+		)
+	`, rid).WithAssociations().All()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -16,8 +25,4 @@ func TestWhereReleaseIncludesRecording(t *testing.T) {
 	if len(releases) < 10 {
 		t.Errorf("Expected at least 10 releases for 'bb883fd9-ab17-434f-b336-9469a2b4f363'. Got %d", len(releases))
 	}
-
-	// for _, release := range releases {
-	// fmt.Printf("Release %s has Artist Credit %d %s\n", release.GID, release.ArtistCredit.ID, release.ArtistCredit.Name)
-	// }
 }

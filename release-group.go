@@ -3,7 +3,6 @@ package pgmb
 import (
 	"github.com/lib/pq"
 
-	sq "github.com/Masterminds/squirrel"
 	"github.com/satori/go.uuid"
 )
 
@@ -22,71 +21,22 @@ type ReleaseGroup struct {
 	Comment          string
 }
 
-// ReleaseGroupCollection is an alias for a slice of ReleaseGroup
-type ReleaseGroupCollection []*ReleaseGroup
-
-// GetReleaseGroup returns the first ReleaseGroup result from the supplied dynamic query
-// parameters.
-//
-func GetReleaseGroup(db DB, clauses ...QueryFunc) (releaseGroup *ReleaseGroup, err error) {
-	clauses = append(clauses, Limit(1))
-	groups, err := FindReleaseGroups(db, clauses...)
-	if err != nil {
-		return
-	}
-	if len(groups) > 0 {
-		releaseGroup = groups[0]
-	}
-	return
-}
-
-// FindReleaseGroups retrieves a slice of ReleaseGroup based on a dynamically built
-// query.
-//
-func FindReleaseGroups(db DB, clauses ...QueryFunc) (groups ReleaseGroupCollection, err error) {
-	groups = make(ReleaseGroupCollection, 0)
-	err = Select(db, &groups, ReleaseGroupQuery(), clauses...)
-	if err != nil {
-		return
-	}
-
-	err = loadReleaseGroupArtistCredits(db, groups)
-	if err != nil {
-		return
-	}
-
-	err = loadReleaseGroupPrimaryTypes(db, groups)
-	if err != nil {
-		return
-	}
-
-	err = loadReleaseGroupSecondaryTypes(db, groups)
-	return
+// WithAssociations attaches all associations to the ReleaseGroup
+func (q ReleaseGroupQuery) WithAssociations() ReleaseGroupQuery {
+	q.processors = append(q.processors, loadReleaseGroupArtistCredits)
+	q.processors = append(q.processors, loadReleaseGroupPrimaryTypes)
+	q.processors = append(q.processors, loadReleaseGroupSecondaryTypes)
+	return q
 }
 
 // ReleaseGroupMap returns a mapping of ReleaseGroup IDs to ReleaseGroup structs
 func ReleaseGroupMap(db DB, ids []int64) (groups map[int64]*ReleaseGroup, err error) {
 	groups = make(map[int64]*ReleaseGroup)
-	results, err := FindReleaseGroups(db, Where("id IN (?)", ids))
+	results, err := ReleaseGroups(db).Where("id IN (?)", ids).All()
 	for _, group := range results {
 		groups[group.ID] = group
 	}
 	return
-}
-
-// ReleaseGroupQuery is the base query for working with release_group data
-//
-func ReleaseGroupQuery() sq.SelectBuilder {
-	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
-		Select(`
-			id, gid, name, type, artist_credit, comment,
-			ARRAY(
-				SELECT j.secondary_type
-				FROM release_group_secondary_type_join j
-				WHERE j.release_group = release_group.id
-			) as secondary_type_ids
-		`).
-		From("release_group")
 }
 
 func loadReleaseGroupArtistCredits(db DB, groups ReleaseGroupCollection) error {

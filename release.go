@@ -3,7 +3,7 @@ package pgmb
 import (
 	"time"
 
-	sq "github.com/Masterminds/squirrel"
+	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"
 )
 
@@ -26,9 +26,6 @@ type Release struct {
 	Quality        int64
 }
 
-// ReleaseCollection is an alias for a slice of Release
-type ReleaseCollection []*Release
-
 // EarliestReleaseDate finds the Time of the earliest attached
 // ReleaseEvent
 func (r *Release) EarliestReleaseDate() time.Time {
@@ -46,74 +43,22 @@ func (r *Release) EarliestReleaseDate() time.Time {
 	return t
 }
 
-// FindReleases retrieves a slice of Release based on a dynamically built query
-//
-func FindReleases(db DB, clauses ...QueryFunc) (releases ReleaseCollection, err error) {
-	releases = make(ReleaseCollection, 0)
-	err = Select(db, &releases, ReleaseQuery(), clauses...)
-	if err != nil {
-		return
-	}
-
-	err = loadReleaseArtistCredits(db, releases)
-	if err != nil {
-		return
-	}
-
-	err = loadReleaseEvents(db, releases)
-	if err != nil {
-		return
-	}
-
-	err = loadReleaseStatuses(db, releases)
-	if err != nil {
-		return
-	}
-
-	err = loadReleasePackagings(db, releases)
-	return
+func (q ReleaseQuery) WithAssociations() ReleaseQuery {
+	q.processors = append(q.processors, loadReleaseArtistCredits)
+	q.processors = append(q.processors, loadReleaseEvents)
+	q.processors = append(q.processors, loadReleaseStatuses)
+	q.processors = append(q.processors, loadReleasePackagings)
+	return q
 }
 
 // ReleaseMap returns a mapping of Release IDs to Release structs
 func ReleaseMap(db DB, ids []int64) (releases map[int64]*Release, err error) {
 	releases = make(map[int64]*Release)
-	results, err := FindReleases(db, Where("id IN (?)", ids))
+	results, err := Releases(db).Where("id IN (?)", ids).All()
 	for _, release := range results {
 		releases[release.ID] = release
 	}
 	return
-}
-
-// ReleaseQuery is the base query for working with release data.
-//
-func ReleaseQuery() sq.SelectBuilder {
-	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
-		Select(`
-			release.id, release.gid, release.name, release.artist_credit, release.release_group,
-			release.status, release.packaging,
-			release.comment, release.barcode, release.quality
-		`).
-		From("release")
-}
-
-// WhereReleaseIncludesRecording filters FindReleases to those which
-// include the supplied Recording ID on one of their media.
-//
-func WhereReleaseIncludesRecording(rid uuid.UUID) QueryFunc {
-	b := func(b sq.SelectBuilder) sq.SelectBuilder {
-		b = b.Where(`
-			EXISTS (
-				SELECT track.id
-				FROM track
-				JOIN medium on medium.id = track.medium
-				JOIN recording ON recording.id = track.recording
-				WHERE recording.gid = ?
-				AND medium.release = release.id
-			)
-		`, rid)
-		return b
-	}
-	return b
 }
 
 func loadReleaseArtistCredits(db DB, releases ReleaseCollection) error {
@@ -122,10 +67,13 @@ func loadReleaseArtistCredits(db DB, releases ReleaseCollection) error {
 		ids[i] = rel.ArtistCreditID
 	}
 	credits, err := ArtistCreditMap(db, ids)
+	if err != nil {
+		return errors.Wrap(err, "failed to build ArtistCreditMap in loadReleaseArtistCredits")
+	}
 	for _, release := range releases {
 		release.ArtistCredit, _ = credits[release.ArtistCreditID]
 	}
-	return err
+	return nil
 }
 
 func loadReleaseEvents(db DB, releases ReleaseCollection) error {
@@ -134,16 +82,19 @@ func loadReleaseEvents(db DB, releases ReleaseCollection) error {
 		ids[i] = rel.ID
 	}
 	events, err := ReleaseEventMap(db, ids)
+	if err != nil {
+		return errors.Wrap(err, "Failed to build ReleaseEventMap in loadReleaseEvents")
+	}
 	for _, release := range releases {
 		release.ReleaseEvents = events[release.ID]
 	}
-	return err
+	return nil
 }
 
 func loadReleaseStatuses(db DB, releases ReleaseCollection) error {
 	statuses, err := ReleaseStatusMap(db)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "Failed to build ReleaseStatusMap in loadReleaseStatuses")
 	}
 	for _, release := range releases {
 		if release.StatusID != nil {
@@ -156,7 +107,7 @@ func loadReleaseStatuses(db DB, releases ReleaseCollection) error {
 func loadReleasePackagings(db DB, releases ReleaseCollection) error {
 	packagings, err := ReleasePackagingMap(db)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "Failed to build ReleasePackagingMap in loadReleasePackagings")
 	}
 	for _, release := range releases {
 		if release.PackagingID != nil {

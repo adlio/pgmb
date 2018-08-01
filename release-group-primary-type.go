@@ -1,7 +1,6 @@
 package pgmb
 
 import (
-	sq "github.com/Masterminds/squirrel"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -19,19 +18,9 @@ type ReleaseGroupPrimaryType struct {
 //
 func ReleaseGroupPrimaryTypeMap(db DB) (types map[int64]*ReleaseGroupPrimaryType, err error) {
 	types = make(map[int64]*ReleaseGroupPrimaryType)
-	results := make([]*ReleaseGroupPrimaryType, 0)
-	err = Select(db, &results, ReleaseGroupPrimaryTypeQuery())
+	results, err := ReleaseGroupPrimaryTypes(db).All()
 	for _, rgt := range results {
 		types[rgt.ID] = rgt
 	}
 	return
-}
-
-// ReleaseGroupPrimaryTypeQuery is the base query for working with release_group_primary_type data
-//
-func ReleaseGroupPrimaryTypeQuery() sq.SelectBuilder {
-	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
-		Select("id, gid, name, child_order").
-		From("release_group_primary_type").
-		OrderBy("child_order ASC")
 }
