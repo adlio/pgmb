@@ -32,9 +32,10 @@ type ArtistAliasCollection []*ArtistAlias
 // (typically by populting additional data on it)
 type ArtistAliasCollectionProcessor func(DB, ArtistAliasCollection) error
 
-// From sets the table being queried
-func (q ArtistAliasQuery) From(name string) ArtistAliasQuery {
-	q.builder = q.builder.From(name)
+// Select can be used to replace ArtistAliasSelect() with a different squirrel.SelectBuilder
+// to pull different fields or join data differently.
+func (q ArtistAliasQuery) Select(b sq.SelectBuilder) ArtistAliasQuery {
+	q.builder = b
 	return q
 }
 

@@ -32,9 +32,10 @@ type ReleaseGroupCollection []*ReleaseGroup
 // (typically by populting additional data on it)
 type ReleaseGroupCollectionProcessor func(DB, ReleaseGroupCollection) error
 
-// From sets the table being queried
-func (q ReleaseGroupQuery) From(name string) ReleaseGroupQuery {
-	q.builder = q.builder.From(name)
+// Select can be used to replace ReleaseGroupSelect() with a different squirrel.SelectBuilder
+// to pull different fields or join data differently.
+func (q ReleaseGroupQuery) Select(b sq.SelectBuilder) ReleaseGroupQuery {
+	q.builder = b
 	return q
 }
 

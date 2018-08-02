@@ -32,9 +32,10 @@ type ReleaseEventCollection []*ReleaseEvent
 // (typically by populting additional data on it)
 type ReleaseEventCollectionProcessor func(DB, ReleaseEventCollection) error
 
-// From sets the table being queried
-func (q ReleaseEventQuery) From(name string) ReleaseEventQuery {
-	q.builder = q.builder.From(name)
+// Select can be used to replace ReleaseEventSelect() with a different squirrel.SelectBuilder
+// to pull different fields or join data differently.
+func (q ReleaseEventQuery) Select(b sq.SelectBuilder) ReleaseEventQuery {
+	q.builder = b
 	return q
 }
 

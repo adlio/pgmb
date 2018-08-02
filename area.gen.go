@@ -32,9 +32,10 @@ type AreaCollection []*Area
 // (typically by populting additional data on it)
 type AreaCollectionProcessor func(DB, AreaCollection) error
 
-// From sets the table being queried
-func (q AreaQuery) From(name string) AreaQuery {
-	q.builder = q.builder.From(name)
+// Select can be used to replace AreaSelect() with a different squirrel.SelectBuilder
+// to pull different fields or join data differently.
+func (q AreaQuery) Select(b sq.SelectBuilder) AreaQuery {
+	q.builder = b
 	return q
 }
 

@@ -83,9 +83,10 @@ type {{ .Name }}Collection []*{{ .Name }}
 // (typically by populting additional data on it)
 type {{ .Name }}CollectionProcessor func(DB, {{ .Name }}Collection) error
 
-// From sets the table being queried
-func (q {{ .Name }}Query) From(name string) {{ .Name }}Query {
-	q.builder = q.builder.From(name)
+// Select can be used to replace {{ .Name }}Select() with a different squirrel.SelectBuilder
+// to pull different fields or join data differently.
+func (q {{ .Name }}Query) Select(b sq.SelectBuilder) {{ .Name }}Query {
+	q.builder = b
 	return q
 }
 

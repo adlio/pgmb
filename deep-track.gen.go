@@ -32,9 +32,10 @@ type DeepTrackCollection []*DeepTrack
 // (typically by populting additional data on it)
 type DeepTrackCollectionProcessor func(DB, DeepTrackCollection) error
 
-// From sets the table being queried
-func (q DeepTrackQuery) From(name string) DeepTrackQuery {
-	q.builder = q.builder.From(name)
+// Select can be used to replace DeepTrackSelect() with a different squirrel.SelectBuilder
+// to pull different fields or join data differently.
+func (q DeepTrackQuery) Select(b sq.SelectBuilder) DeepTrackQuery {
+	q.builder = b
 	return q
 }
 

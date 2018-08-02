@@ -32,9 +32,10 @@ type ReleasePackagingCollection []*ReleasePackaging
 // (typically by populting additional data on it)
 type ReleasePackagingCollectionProcessor func(DB, ReleasePackagingCollection) error
 
-// From sets the table being queried
-func (q ReleasePackagingQuery) From(name string) ReleasePackagingQuery {
-	q.builder = q.builder.From(name)
+// Select can be used to replace ReleasePackagingSelect() with a different squirrel.SelectBuilder
+// to pull different fields or join data differently.
+func (q ReleasePackagingQuery) Select(b sq.SelectBuilder) ReleasePackagingQuery {
+	q.builder = b
 	return q
 }
 

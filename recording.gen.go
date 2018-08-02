@@ -32,9 +32,10 @@ type RecordingCollection []*Recording
 // (typically by populting additional data on it)
 type RecordingCollectionProcessor func(DB, RecordingCollection) error
 
-// From sets the table being queried
-func (q RecordingQuery) From(name string) RecordingQuery {
-	q.builder = q.builder.From(name)
+// Select can be used to replace RecordingSelect() with a different squirrel.SelectBuilder
+// to pull different fields or join data differently.
+func (q RecordingQuery) Select(b sq.SelectBuilder) RecordingQuery {
+	q.builder = b
 	return q
 }
 

@@ -32,9 +32,10 @@ type ReleaseGroupPrimaryTypeCollection []*ReleaseGroupPrimaryType
 // (typically by populting additional data on it)
 type ReleaseGroupPrimaryTypeCollectionProcessor func(DB, ReleaseGroupPrimaryTypeCollection) error
 
-// From sets the table being queried
-func (q ReleaseGroupPrimaryTypeQuery) From(name string) ReleaseGroupPrimaryTypeQuery {
-	q.builder = q.builder.From(name)
+// Select can be used to replace ReleaseGroupPrimaryTypeSelect() with a different squirrel.SelectBuilder
+// to pull different fields or join data differently.
+func (q ReleaseGroupPrimaryTypeQuery) Select(b sq.SelectBuilder) ReleaseGroupPrimaryTypeQuery {
+	q.builder = b
 	return q
 }
 

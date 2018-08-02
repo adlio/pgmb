@@ -32,9 +32,10 @@ type ReleaseCollection []*Release
 // (typically by populting additional data on it)
 type ReleaseCollectionProcessor func(DB, ReleaseCollection) error
 
-// From sets the table being queried
-func (q ReleaseQuery) From(name string) ReleaseQuery {
-	q.builder = q.builder.From(name)
+// Select can be used to replace ReleaseSelect() with a different squirrel.SelectBuilder
+// to pull different fields or join data differently.
+func (q ReleaseQuery) Select(b sq.SelectBuilder) ReleaseQuery {
+	q.builder = b
 	return q
 }
 
