@@ -7,13 +7,12 @@ import (
 	"html/template"
 	"log"
 	"os"
-	"strings"
 )
 
 type Table struct {
 	Name       string
 	PluralName string
-	TableName  string
+	FileName   string
 }
 
 func main() {
@@ -21,20 +20,20 @@ func main() {
 	tables := []Table{
 		{"Area", "Areas", "area"},
 		{"Artist", "Artists", "artist"},
-		{"ArtistAlias", "ArtistAliases", "artist_alias"},
-		{"ArtistCredit", "ArtistCredits", "artist_credit"},
-		{"DeepTrack", "DeepTracks", "deep_track"},
+		{"ArtistAlias", "ArtistAliases", "artist-alias"},
+		{"ArtistCredit", "ArtistCredits", "artist-credit"},
+		{"DeepTrack", "DeepTracks", "deep-track"},
 		{"Recording", "Recordings", "recording"},
-		{"ReleaseGroup", "ReleaseGroups", "release_group"},
-		{"ReleaseGroupPrimaryType", "ReleaseGroupPrimaryTypes", "release_group_primary_type"},
+		{"ReleaseGroup", "ReleaseGroups", "release-group"},
+		{"ReleaseGroupPrimaryType", "ReleaseGroupPrimaryTypes", "release-group-primary-type"},
 		{"Release", "Releases", "release"},
-		{"ReleaseEvent", "ReleaseEvents", "release_event"},
-		{"ReleaseStatus", "ReleaseStatuses", "release_status"},
-		{"ReleasePackaging", "ReleasePackagings", "release_packaging"},
+		{"ReleaseEvent", "ReleaseEvents", "release-event"},
+		{"ReleaseStatus", "ReleaseStatuses", "release-status"},
+		{"ReleasePackaging", "ReleasePackagings", "release-packaging"},
 	}
 
 	for _, table := range tables {
-		filename := strings.Replace(strings.ToLower(table.TableName), "_", "-", -1) + ".gen.go"
+		filename := table.FileName + ".gen.go"
 		fmt.Println("Generating " + filename)
 		f, err := os.Create(filename)
 		die(err)
