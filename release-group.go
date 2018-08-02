@@ -22,6 +22,9 @@ type ReleaseGroup struct {
 	Comment          string
 }
 
+// ReleaseGroupSelect builds the default query for fetching data from
+// the release_group table.
+//
 func ReleaseGroupSelect() sq.SelectBuilder {
 	return sq.StatementBuilder.
 		Select(`
