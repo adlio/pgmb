@@ -66,6 +66,23 @@ func (q ArtistCreditQuery) WithAssociations() ArtistCreditQuery {
 	return q
 }
 
+// WhereCreditOrArtistNameMatches adds a where clause to *exactly*
+// match the supplied string on either the artist_credit.name or
+// the artist.name.
+//
+func (q ArtistCreditQuery) WhereCreditOrArtistNameMatches(name string) ArtistCreditQuery {
+	q.builder = q.builder.Where(`
+		lower(name) = lower(?)
+		OR id IN (
+			SELECT acn.artist_credit
+			FROM artist_credit_name acn
+			JOIN artist ON artist.id = acn.artist
+			WHERE lower(artist.name) = lower(?)
+		)
+	`, name, name)
+	return q
+}
+
 // ArtistCreditMap returns a mapping of ArtistCredit IDs to ArtistCredit structs
 func ArtistCreditMap(db DB, ids []int64) (credits map[int64]*ArtistCredit, err error) {
 	credits = make(map[int64]*ArtistCredit)
