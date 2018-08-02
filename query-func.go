@@ -67,11 +67,6 @@ func (s SelectBuilder) Limit(n int) SelectBuilder {
 	return s
 }
 
-func (s SelectBuilder) ToSql() (sql string, args []interface{}, err error) {
-	sql, args = s.ToSQL()
-	return sql, args, nil
-}
-
 // ToSQL blah
 func (s SelectBuilder) ToSQL() (sql string, args []interface{}) {
 	b := bytes.Buffer{}
