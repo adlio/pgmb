@@ -11,7 +11,7 @@ func TestFindAreas(t *testing.T) {
 	}
 
 	if len(areas) < 1 {
-		t.Error("No results from FindAreas")
+		t.Error("No results from Areas()")
 	}
 	if areas[0].Name != "United States" {
 		t.Error("Should have found United States.")

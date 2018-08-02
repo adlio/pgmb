@@ -29,7 +29,7 @@ func ReleaseGroupSecondaryTypeMap(db DB) (types map[int64]*ReleaseGroupSecondary
 // ReleaseGroupSecondaryTypeQuery is the base query for working with release_group_primary_type data
 //
 func ReleaseGroupSecondaryTypeQuery() sq.SelectBuilder {
-	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+	return sq.StatementBuilder.
 		Select("id, gid, name").
 		From("release_group_secondary_type")
 }

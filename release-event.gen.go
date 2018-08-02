@@ -2,30 +2,25 @@
 package pgmb
 
 import (
-	"strings"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 )
 
+// ReleaseEventQueryFunc can be chained together to modify a ReleaseEventQuery
+type ReleaseEventQueryFunc func(ReleaseEventQuery) ReleaseEventQuery
+
 // ReleaseEventQuery is a queryer for ReleaseEvent data
 type ReleaseEventQuery struct {
-	db      DB
-	builder SelectBuilder
+	db         DB
+	builder    sq.SelectBuilder
 	processors []ReleaseEventCollectionProcessor
 }
 
 // ReleaseEvents is the constructor for ReleaseEventQuery
-func ReleaseEvents(db DB, columns ...string) ReleaseEventQuery {
-
-	var selectClause string
-	if len(columns) > 0 {
-		selectClause = strings.Join(columns, ", ")
-	} else {
-		selectClause = "release, country, date_year, date_month, date_day"
-	}
-
+func ReleaseEvents(db DB) ReleaseEventQuery {
 	q := ReleaseEventQuery{
 		db:      db,
-		builder: SelectBuilder{}.Select(selectClause).From("release_event"),
+		builder: ReleaseEventSelect(),
 	}
 	return q
 }
@@ -37,9 +32,9 @@ type ReleaseEventCollection []*ReleaseEvent
 // (typically by populting additional data on it)
 type ReleaseEventCollectionProcessor func(DB, ReleaseEventCollection) error
 
-// Select adjusts the columns returned from the query
-func (q ReleaseEventQuery) Select(columns string) ReleaseEventQuery {
-	q.builder = q.builder.Select(columns)
+// From sets the table being queried
+func (q ReleaseEventQuery) From(name string) ReleaseEventQuery {
+	q.builder = q.builder.From(name)
 	return q
 }
 

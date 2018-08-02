@@ -2,30 +2,25 @@
 package pgmb
 
 import (
-	"strings"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 )
 
+// ReleaseQueryFunc can be chained together to modify a ReleaseQuery
+type ReleaseQueryFunc func(ReleaseQuery) ReleaseQuery
+
 // ReleaseQuery is a queryer for Release data
 type ReleaseQuery struct {
-	db      DB
-	builder SelectBuilder
+	db         DB
+	builder    sq.SelectBuilder
 	processors []ReleaseCollectionProcessor
 }
 
 // Releases is the constructor for ReleaseQuery
-func Releases(db DB, columns ...string) ReleaseQuery {
-
-	var selectClause string
-	if len(columns) > 0 {
-		selectClause = strings.Join(columns, ", ")
-	} else {
-		selectClause = "id, gid, name, artist_credit, release_group, status, packaging, comment, barcode, quality"
-	}
-
+func Releases(db DB) ReleaseQuery {
 	q := ReleaseQuery{
 		db:      db,
-		builder: SelectBuilder{}.Select(selectClause).From("release"),
+		builder: ReleaseSelect(),
 	}
 	return q
 }
@@ -37,9 +32,9 @@ type ReleaseCollection []*Release
 // (typically by populting additional data on it)
 type ReleaseCollectionProcessor func(DB, ReleaseCollection) error
 
-// Select adjusts the columns returned from the query
-func (q ReleaseQuery) Select(columns string) ReleaseQuery {
-	q.builder = q.builder.Select(columns)
+// From sets the table being queried
+func (q ReleaseQuery) From(name string) ReleaseQuery {
+	q.builder = q.builder.From(name)
 	return q
 }
 

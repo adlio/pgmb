@@ -3,6 +3,7 @@ package pgmb
 import (
 	"time"
 
+	sq "github.com/Masterminds/squirrel"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -19,6 +20,13 @@ type Recording struct {
 	LastUpdated    time.Time
 }
 
+// RecordingSelect creates the default select query for recording data
+func RecordingSelect() sq.SelectBuilder {
+	return sq.StatementBuilder.
+		Select("id, gid, name, artist_credit, length, comment").
+		From("recording")
+}
+
 // WithAssociations adds a processor to load all associated objects
 // on the returned Recording entities.
 //
@@ -30,7 +38,7 @@ func (q RecordingQuery) WithAssociations() RecordingQuery {
 // RecordingMap returns a mapping of Recording IDs to Recording structs
 func RecordingMap(db DB, ids []int64) (recordings map[int64]*Recording, err error) {
 	recordings = make(map[int64]*Recording)
-	results, err := Recordings(db).Where("id IN (?)", ids).All()
+	results, err := Recordings(db).Where("id IN (?)", ids).WithAssociations().All()
 	for _, recording := range results {
 		recordings[recording.ID] = recording
 	}

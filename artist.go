@@ -21,6 +21,13 @@ type Artist struct {
 	LastUpdated   time.Time
 }
 
+// ArtistSelect builds the default builder for artist queries
+func ArtistSelect() sq.SelectBuilder {
+	return sq.StatementBuilder.
+		Select("id, gid, name, sort_name, begin_date_year, end_date_year").
+		From("artist")
+}
+
 // ArtistFuzzyNameOrAlias returns a QueryFunc which matches artists
 // whose name or alias names fuzzy-match the supplied string.
 func ArtistFuzzyNameOrAlias(name string) QueryFunc {
@@ -39,6 +46,8 @@ func ArtistFuzzyNameOrAlias(name string) QueryFunc {
 	}
 }
 
+// WithAssociations attaches all associations for each record
+// returned.
 func (q ArtistQuery) WithAssociations() ArtistQuery {
 	q.processors = append(q.processors, loadArtistAliases)
 	return q

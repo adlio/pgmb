@@ -2,30 +2,25 @@
 package pgmb
 
 import (
-	"strings"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 )
 
+// RecordingQueryFunc can be chained together to modify a RecordingQuery
+type RecordingQueryFunc func(RecordingQuery) RecordingQuery
+
 // RecordingQuery is a queryer for Recording data
 type RecordingQuery struct {
-	db      DB
-	builder SelectBuilder
+	db         DB
+	builder    sq.SelectBuilder
 	processors []RecordingCollectionProcessor
 }
 
 // Recordings is the constructor for RecordingQuery
-func Recordings(db DB, columns ...string) RecordingQuery {
-
-	var selectClause string
-	if len(columns) > 0 {
-		selectClause = strings.Join(columns, ", ")
-	} else {
-		selectClause = "id, gid, name, artist_credit, length, comment"
-	}
-
+func Recordings(db DB) RecordingQuery {
 	q := RecordingQuery{
 		db:      db,
-		builder: SelectBuilder{}.Select(selectClause).From("recording"),
+		builder: RecordingSelect(),
 	}
 	return q
 }
@@ -37,9 +32,9 @@ type RecordingCollection []*Recording
 // (typically by populting additional data on it)
 type RecordingCollectionProcessor func(DB, RecordingCollection) error
 
-// Select adjusts the columns returned from the query
-func (q RecordingQuery) Select(columns string) RecordingQuery {
-	q.builder = q.builder.Select(columns)
+// From sets the table being queried
+func (q RecordingQuery) From(name string) RecordingQuery {
+	q.builder = q.builder.From(name)
 	return q
 }
 

@@ -4,9 +4,11 @@ import (
 	"database/sql"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/pkg/errors"
 )
 
 //go:generate go run gen.go
+//go:generate go fmt .
 
 // Sqler blah
 type Sqler interface {
@@ -27,8 +29,6 @@ type DB interface {
 // satisfies our DB interface directly.
 func NewDB(db *sql.DB) DB {
 	convertedDB := sqlx.NewDb(db, "postgres")
-	//TODO Is this a good idea?
-	convertedDB.Exec("SELECT set_limit(0.5);")
 	return convertedDB
 }
 
@@ -44,7 +44,15 @@ func Get(db DB, dest interface{}, q Sqler) error {
 // of structs.
 //
 func Select(db DB, dest interface{}, q Sqler) error {
-	sql, args, _ := q.ToSql()
-	err := db.Select(dest, db.Rebind(sql), args...)
+	sql, args, err := q.ToSql()
+	if err != nil {
+		return errors.Wrap(err, "Squirrel ToSql() failed.")
+	}
+
+	sql, args, err = sqlx.In(sql, args...)
+	if err != nil {
+		return errors.Wrap(err, "sqlx.In failed.")
+	}
+	err = db.Select(dest, db.Rebind(sql), args...)
 	return err
 }

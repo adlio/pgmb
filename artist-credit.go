@@ -1,6 +1,7 @@
 package pgmb
 
 import (
+	sq "github.com/Masterminds/squirrel"
 	"github.com/lib/pq"
 )
 
@@ -41,10 +42,34 @@ func (acc ArtistCreditCollection) UniqueArtistIDs() []int64 {
 	return ids
 }
 
+// ArtistCreditSelect builds the default select for ArtistCredit
+func ArtistCreditSelect() sq.SelectBuilder {
+	return sq.StatementBuilder.
+		Select(`
+			id,
+			name,
+			artist_count,
+			ref_count,
+			ARRAY(
+				SELECT n.artist
+				FROM artist_credit_name n
+				WHERE n.artist_credit = artist_credit.id
+			) as artist_ids`).
+		From("artist_credit")
+}
+
+// WithAssociations attaches all relevant associations to each entity in
+// the results.
+//
+func (q ArtistCreditQuery) WithAssociations() ArtistCreditQuery {
+	q.processors = append(q.processors, loadArtistCreditArtists)
+	return q
+}
+
 // ArtistCreditMap returns a mapping of ArtistCredit IDs to ArtistCredit structs
 func ArtistCreditMap(db DB, ids []int64) (credits map[int64]*ArtistCredit, err error) {
 	credits = make(map[int64]*ArtistCredit)
-	results, err := ArtistCredits(db).Where("id IN (?)", ids).All()
+	results, err := ArtistCredits(db).Where("id IN (?)", ids).WithAssociations().All()
 	for _, credit := range results {
 		credits[credit.ID] = credit
 	}

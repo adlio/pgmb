@@ -2,30 +2,25 @@
 package pgmb
 
 import (
-	"strings"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 )
 
+// ArtistAliasQueryFunc can be chained together to modify a ArtistAliasQuery
+type ArtistAliasQueryFunc func(ArtistAliasQuery) ArtistAliasQuery
+
 // ArtistAliasQuery is a queryer for ArtistAlias data
 type ArtistAliasQuery struct {
-	db      DB
-	builder SelectBuilder
+	db         DB
+	builder    sq.SelectBuilder
 	processors []ArtistAliasCollectionProcessor
 }
 
 // ArtistAliases is the constructor for ArtistAliasQuery
-func ArtistAliases(db DB, columns ...string) ArtistAliasQuery {
-
-	var selectClause string
-	if len(columns) > 0 {
-		selectClause = strings.Join(columns, ", ")
-	} else {
-		selectClause = "id, artist, name, sort_name"
-	}
-
+func ArtistAliases(db DB) ArtistAliasQuery {
 	q := ArtistAliasQuery{
 		db:      db,
-		builder: SelectBuilder{}.Select(selectClause).From("artist_alias"),
+		builder: ArtistAliasSelect(),
 	}
 	return q
 }
@@ -37,9 +32,9 @@ type ArtistAliasCollection []*ArtistAlias
 // (typically by populting additional data on it)
 type ArtistAliasCollectionProcessor func(DB, ArtistAliasCollection) error
 
-// Select adjusts the columns returned from the query
-func (q ArtistAliasQuery) Select(columns string) ArtistAliasQuery {
-	q.builder = q.builder.Select(columns)
+// From sets the table being queried
+func (q ArtistAliasQuery) From(name string) ArtistAliasQuery {
+	q.builder = q.builder.From(name)
 	return q
 }
 

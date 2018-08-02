@@ -1,6 +1,7 @@
 package pgmb
 
 import (
+	sq "github.com/Masterminds/squirrel"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -12,6 +13,14 @@ type ReleasePackaging struct {
 	Name        string
 	ChildOrder  int64 `db:"child_order"`
 	Description *string
+}
+
+// ReleasePackagingSelect builds the default select query for the
+// release_packaging table
+func ReleasePackagingSelect() sq.SelectBuilder {
+	return sq.StatementBuilder.
+		Select("id, gid, name, child_order, description").
+		From("release_packaging")
 }
 
 // ReleasePackagingMap returns a map of every release_packaging in the

@@ -2,30 +2,25 @@
 package pgmb
 
 import (
-	"strings"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 )
 
+// ArtistCreditQueryFunc can be chained together to modify a ArtistCreditQuery
+type ArtistCreditQueryFunc func(ArtistCreditQuery) ArtistCreditQuery
+
 // ArtistCreditQuery is a queryer for ArtistCredit data
 type ArtistCreditQuery struct {
-	db      DB
-	builder SelectBuilder
+	db         DB
+	builder    sq.SelectBuilder
 	processors []ArtistCreditCollectionProcessor
 }
 
 // ArtistCredits is the constructor for ArtistCreditQuery
-func ArtistCredits(db DB, columns ...string) ArtistCreditQuery {
-
-	var selectClause string
-	if len(columns) > 0 {
-		selectClause = strings.Join(columns, ", ")
-	} else {
-		selectClause = "id, name, artist_count, ref_count, ARRAY(SELECT n.artist FROM artist_credit_name n WHERE n.artist_credit = artist_credit.id) as artist_ids"
-	}
-
+func ArtistCredits(db DB) ArtistCreditQuery {
 	q := ArtistCreditQuery{
 		db:      db,
-		builder: SelectBuilder{}.Select(selectClause).From("artist_credit"),
+		builder: ArtistCreditSelect(),
 	}
 	return q
 }
@@ -37,9 +32,9 @@ type ArtistCreditCollection []*ArtistCredit
 // (typically by populting additional data on it)
 type ArtistCreditCollectionProcessor func(DB, ArtistCreditCollection) error
 
-// Select adjusts the columns returned from the query
-func (q ArtistCreditQuery) Select(columns string) ArtistCreditQuery {
-	q.builder = q.builder.Select(columns)
+// From sets the table being queried
+func (q ArtistCreditQuery) From(name string) ArtistCreditQuery {
+	q.builder = q.builder.From(name)
 	return q
 }
 

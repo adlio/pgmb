@@ -2,30 +2,25 @@
 package pgmb
 
 import (
-	"strings"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 )
 
+// ReleasePackagingQueryFunc can be chained together to modify a ReleasePackagingQuery
+type ReleasePackagingQueryFunc func(ReleasePackagingQuery) ReleasePackagingQuery
+
 // ReleasePackagingQuery is a queryer for ReleasePackaging data
 type ReleasePackagingQuery struct {
-	db      DB
-	builder SelectBuilder
+	db         DB
+	builder    sq.SelectBuilder
 	processors []ReleasePackagingCollectionProcessor
 }
 
 // ReleasePackagings is the constructor for ReleasePackagingQuery
-func ReleasePackagings(db DB, columns ...string) ReleasePackagingQuery {
-
-	var selectClause string
-	if len(columns) > 0 {
-		selectClause = strings.Join(columns, ", ")
-	} else {
-		selectClause = "id, gid, name, child_order, description"
-	}
-
+func ReleasePackagings(db DB) ReleasePackagingQuery {
 	q := ReleasePackagingQuery{
 		db:      db,
-		builder: SelectBuilder{}.Select(selectClause).From("release_packaging"),
+		builder: ReleasePackagingSelect(),
 	}
 	return q
 }
@@ -37,9 +32,9 @@ type ReleasePackagingCollection []*ReleasePackaging
 // (typically by populting additional data on it)
 type ReleasePackagingCollectionProcessor func(DB, ReleasePackagingCollection) error
 
-// Select adjusts the columns returned from the query
-func (q ReleasePackagingQuery) Select(columns string) ReleasePackagingQuery {
-	q.builder = q.builder.Select(columns)
+// From sets the table being queried
+func (q ReleasePackagingQuery) From(name string) ReleasePackagingQuery {
+	q.builder = q.builder.From(name)
 	return q
 }
 

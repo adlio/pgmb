@@ -29,43 +29,10 @@ type DeepTrack struct {
 	IsDataTrack    bool `db:"is_data_track"`
 }
 
-// DeepTrackCollection is an alias for a slice of DeepTrack
-type DeepTrackCollection []*DeepTrack
-
-// FindDeepTracks rertrieves a slice of Track based on a dynamically built query
+// DeepTrackSelect is the base query for working with track data.
 //
-func FindDeepTracks(db DB, query sq.SelectBuilder) (tracks DeepTrackCollection, err error) {
-	tracks = make(DeepTrackCollection, 0)
-	err = Select(db, &tracks, query)
-	if err != nil {
-		return
-	}
-
-	err = loadDeepTrackArtistCredits(db, tracks)
-	if err != nil {
-		return
-	}
-
-	err = loadDeepTrackRecordings(db, tracks)
-	if err != nil {
-		return
-	}
-
-	err = loadDeepTrackReleases(db, tracks)
-	if err != nil {
-		return
-	}
-
-	/*
-		err = loadDeepTrackReleaseGroups(db, tracks)
-	*/
-	return
-}
-
-// DeepTrackQuery is the base query for working with track data.
-//
-func DeepTrackQuery() sq.SelectBuilder {
-	q := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+func DeepTrackSelect() sq.SelectBuilder {
+	q := sq.StatementBuilder.
 		Select(`
 			track.id, track.gid, track.name, track.position, track.number,
 			track.artist_credit, track.recording,
@@ -77,6 +44,17 @@ func DeepTrackQuery() sq.SelectBuilder {
 		Join("medium ON medium.id = track.medium").
 		Join("release ON release.id = medium.release").
 		Join("recording ON recording.id = track.recording")
+	return q
+}
+
+// WithAssociations attaches all associations to the structs returned
+// by a query.
+//
+func (q DeepTrackQuery) WithAssociations() DeepTrackQuery {
+	q.processors = append(q.processors, loadDeepTrackArtistCredits)
+	q.processors = append(q.processors, loadDeepTrackRecordings)
+	q.processors = append(q.processors, loadDeepTrackReleases)
+	q.processors = append(q.processors, loadDeepTrackReleaseGroups)
 	return q
 }
 

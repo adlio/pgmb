@@ -2,30 +2,25 @@
 package pgmb
 
 import (
-	"strings"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 )
 
+// ReleaseStatusQueryFunc can be chained together to modify a ReleaseStatusQuery
+type ReleaseStatusQueryFunc func(ReleaseStatusQuery) ReleaseStatusQuery
+
 // ReleaseStatusQuery is a queryer for ReleaseStatus data
 type ReleaseStatusQuery struct {
-	db      DB
-	builder SelectBuilder
+	db         DB
+	builder    sq.SelectBuilder
 	processors []ReleaseStatusCollectionProcessor
 }
 
 // ReleaseStatuses is the constructor for ReleaseStatusQuery
-func ReleaseStatuses(db DB, columns ...string) ReleaseStatusQuery {
-
-	var selectClause string
-	if len(columns) > 0 {
-		selectClause = strings.Join(columns, ", ")
-	} else {
-		selectClause = "id, gid, name, child_order, description"
-	}
-
+func ReleaseStatuses(db DB) ReleaseStatusQuery {
 	q := ReleaseStatusQuery{
 		db:      db,
-		builder: SelectBuilder{}.Select(selectClause).From("release_status"),
+		builder: ReleaseStatusSelect(),
 	}
 	return q
 }
@@ -37,9 +32,9 @@ type ReleaseStatusCollection []*ReleaseStatus
 // (typically by populting additional data on it)
 type ReleaseStatusCollectionProcessor func(DB, ReleaseStatusCollection) error
 
-// Select adjusts the columns returned from the query
-func (q ReleaseStatusQuery) Select(columns string) ReleaseStatusQuery {
-	q.builder = q.builder.Select(columns)
+// From sets the table being queried
+func (q ReleaseStatusQuery) From(name string) ReleaseStatusQuery {
+	q.builder = q.builder.From(name)
 	return q
 }
 

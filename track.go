@@ -45,7 +45,7 @@ func FindTracks(db DB, query sq.SelectBuilder) (tracks TrackCollection, err erro
 // TrackQuery is the base query for working with track data.
 //
 func TrackQuery() sq.SelectBuilder {
-	return sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+	return sq.StatementBuilder.
 		Select(`
 			track.id, track.gid, track.name, track.position, track.number,
 			track.artist_credit, track.recording,

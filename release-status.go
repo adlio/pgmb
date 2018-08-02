@@ -1,6 +1,7 @@
 package pgmb
 
 import (
+	sq "github.com/Masterminds/squirrel"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -12,6 +13,13 @@ type ReleaseStatus struct {
 	Name        string
 	ChildOrder  int64 `db:"child_order"`
 	Description string
+}
+
+// ReleaseStatusSelect builds the default query for release_status data
+func ReleaseStatusSelect() sq.SelectBuilder {
+	return sq.StatementBuilder.
+		Select("id, gid, name, child_order, description").
+		From("release_status")
 }
 
 // ReleaseStatusMap returns a map of every release_status in the

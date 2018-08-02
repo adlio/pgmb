@@ -1,6 +1,7 @@
 package pgmb
 
 import (
+	sq "github.com/Masterminds/squirrel"
 	"github.com/lib/pq"
 
 	"github.com/satori/go.uuid"
@@ -21,6 +22,19 @@ type ReleaseGroup struct {
 	Comment          string
 }
 
+func ReleaseGroupSelect() sq.SelectBuilder {
+	return sq.StatementBuilder.
+		Select(`
+			id, gid, name, type, artist_credit, comment,
+			ARRAY(
+				SELECT j.secondary_type
+				FROM release_group_secondary_type_join j
+				WHERE j.release_group = release_group.id
+			) as secondary_type_ids
+		`).
+		From("release_group")
+}
+
 // WithAssociations attaches all associations to the ReleaseGroup
 func (q ReleaseGroupQuery) WithAssociations() ReleaseGroupQuery {
 	q.processors = append(q.processors, loadReleaseGroupArtistCredits)
@@ -32,7 +46,7 @@ func (q ReleaseGroupQuery) WithAssociations() ReleaseGroupQuery {
 // ReleaseGroupMap returns a mapping of ReleaseGroup IDs to ReleaseGroup structs
 func ReleaseGroupMap(db DB, ids []int64) (groups map[int64]*ReleaseGroup, err error) {
 	groups = make(map[int64]*ReleaseGroup)
-	results, err := ReleaseGroups(db).Where("id IN (?)", ids).All()
+	results, err := ReleaseGroups(db).Where("id IN (?)", ids).WithAssociations().All()
 	for _, group := range results {
 		groups[group.ID] = group
 	}

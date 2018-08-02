@@ -3,6 +3,7 @@ package pgmb
 import (
 	"time"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"
 )
@@ -43,6 +44,17 @@ func (r *Release) EarliestReleaseDate() time.Time {
 	return t
 }
 
+// ReleaseSelect builds the default query for fetching release data
+//
+func ReleaseSelect() sq.SelectBuilder {
+	return sq.StatementBuilder.
+		Select("id, gid, name, artist_credit, release_group, status, packaging, comment, barcode, quality").
+		From("release")
+}
+
+// WithAssociations attaches all associations to the returned Release structs from
+// other database tables.
+//
 func (q ReleaseQuery) WithAssociations() ReleaseQuery {
 	q.processors = append(q.processors, loadReleaseArtistCredits)
 	q.processors = append(q.processors, loadReleaseEvents)
@@ -54,7 +66,7 @@ func (q ReleaseQuery) WithAssociations() ReleaseQuery {
 // ReleaseMap returns a mapping of Release IDs to Release structs
 func ReleaseMap(db DB, ids []int64) (releases map[int64]*Release, err error) {
 	releases = make(map[int64]*Release)
-	results, err := Releases(db).Where("id IN (?)", ids).All()
+	results, err := Releases(db).Where("id IN (?)", ids).WithAssociations().All()
 	for _, release := range results {
 		releases[release.ID] = release
 	}

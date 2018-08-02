@@ -2,30 +2,25 @@
 package pgmb
 
 import (
-	"strings"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 )
 
+// ReleaseGroupPrimaryTypeQueryFunc can be chained together to modify a ReleaseGroupPrimaryTypeQuery
+type ReleaseGroupPrimaryTypeQueryFunc func(ReleaseGroupPrimaryTypeQuery) ReleaseGroupPrimaryTypeQuery
+
 // ReleaseGroupPrimaryTypeQuery is a queryer for ReleaseGroupPrimaryType data
 type ReleaseGroupPrimaryTypeQuery struct {
-	db      DB
-	builder SelectBuilder
+	db         DB
+	builder    sq.SelectBuilder
 	processors []ReleaseGroupPrimaryTypeCollectionProcessor
 }
 
 // ReleaseGroupPrimaryTypes is the constructor for ReleaseGroupPrimaryTypeQuery
-func ReleaseGroupPrimaryTypes(db DB, columns ...string) ReleaseGroupPrimaryTypeQuery {
-
-	var selectClause string
-	if len(columns) > 0 {
-		selectClause = strings.Join(columns, ", ")
-	} else {
-		selectClause = "id, gid, name, child_order"
-	}
-
+func ReleaseGroupPrimaryTypes(db DB) ReleaseGroupPrimaryTypeQuery {
 	q := ReleaseGroupPrimaryTypeQuery{
 		db:      db,
-		builder: SelectBuilder{}.Select(selectClause).From("release_group_primary_type"),
+		builder: ReleaseGroupPrimaryTypeSelect(),
 	}
 	return q
 }
@@ -37,9 +32,9 @@ type ReleaseGroupPrimaryTypeCollection []*ReleaseGroupPrimaryType
 // (typically by populting additional data on it)
 type ReleaseGroupPrimaryTypeCollectionProcessor func(DB, ReleaseGroupPrimaryTypeCollection) error
 
-// Select adjusts the columns returned from the query
-func (q ReleaseGroupPrimaryTypeQuery) Select(columns string) ReleaseGroupPrimaryTypeQuery {
-	q.builder = q.builder.Select(columns)
+// From sets the table being queried
+func (q ReleaseGroupPrimaryTypeQuery) From(name string) ReleaseGroupPrimaryTypeQuery {
+	q.builder = q.builder.From(name)
 	return q
 }
 

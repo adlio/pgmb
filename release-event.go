@@ -3,6 +3,7 @@ package pgmb
 import (
 	"time"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 )
 
@@ -17,6 +18,13 @@ type ReleaseEvent struct {
 	DateYear  *int64 `db:"date_year"`
 	DateMonth *int64 `db:"date_month"`
 	DateDay   *int64 `db:"date_day"`
+}
+
+// ReleaseEventSelect builds the default select for release data
+func ReleaseEventSelect() sq.SelectBuilder {
+	return sq.StatementBuilder.
+		Select("release, country, date_year, date_month, date_day").
+		From("release_event")
 }
 
 // Date converts the MusicBrainz-supplied YMD values into a

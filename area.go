@@ -1,6 +1,7 @@
 package pgmb
 
 import (
+	sq "github.com/Masterminds/squirrel"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -10,6 +11,13 @@ type Area struct {
 	ID   int64
 	GID  uuid.UUID
 	Name string
+}
+
+// AreaSelect builds the default select query for area data
+func AreaSelect() sq.SelectBuilder {
+	return sq.StatementBuilder.
+		Select("id, gid, name").
+		From("area")
 }
 
 // AreaMap returns a mapping of Area IDs to Area structs

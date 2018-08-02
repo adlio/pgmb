@@ -2,30 +2,25 @@
 package pgmb
 
 import (
-	"strings"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/pkg/errors"
 )
 
+// AreaQueryFunc can be chained together to modify a AreaQuery
+type AreaQueryFunc func(AreaQuery) AreaQuery
+
 // AreaQuery is a queryer for Area data
 type AreaQuery struct {
-	db      DB
-	builder SelectBuilder
+	db         DB
+	builder    sq.SelectBuilder
 	processors []AreaCollectionProcessor
 }
 
 // Areas is the constructor for AreaQuery
-func Areas(db DB, columns ...string) AreaQuery {
-
-	var selectClause string
-	if len(columns) > 0 {
-		selectClause = strings.Join(columns, ", ")
-	} else {
-		selectClause = "id, gid, name"
-	}
-
+func Areas(db DB) AreaQuery {
 	q := AreaQuery{
 		db:      db,
-		builder: SelectBuilder{}.Select(selectClause).From("area"),
+		builder: AreaSelect(),
 	}
 	return q
 }
@@ -37,9 +32,9 @@ type AreaCollection []*Area
 // (typically by populting additional data on it)
 type AreaCollectionProcessor func(DB, AreaCollection) error
 
-// Select adjusts the columns returned from the query
-func (q AreaQuery) Select(columns string) AreaQuery {
-	q.builder = q.builder.Select(columns)
+// From sets the table being queried
+func (q AreaQuery) From(name string) AreaQuery {
+	q.builder = q.builder.From(name)
 	return q
 }
 
